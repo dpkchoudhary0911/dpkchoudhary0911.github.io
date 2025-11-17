@@ -1,46 +1,258 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vector Run Labs</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vector Run Labs — Vector Run</title>
+  <meta name="description" content="Vector Run Labs — Provably-fair, high-frequency crypto casino microgames. Flagship game: Vector Run." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    /* ---------------------------
+       NEON CYBERPUNK THEME - SINGLE FILE
+       Paste this into index.html and commit.
+       --------------------------- */
+    :root{
+      --bg:#05060a;
+      --panel:#07101a;
+      --muted:#9fb0b8;
+      --neon1:#00ffc8;
+      --neon2:#7c3cff;
+      --accent: #00d6ff;
+      --glass: rgba(255,255,255,0.03);
+      --glass-strong: rgba(255,255,255,0.06);
+      --radius:14px;
+    }
+    html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 10% 10%, rgba(124,60,255,0.06), transparent 6%), radial-gradient(1000px 500px at 90% 90%, rgba(0,255,200,0.03), transparent 8%), var(--bg); font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; color:#e8f1f4; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+    .wrap{max-width:1100px;margin:32px auto;padding:28px;}
+    header{display:flex;align-items:center;gap:20px;justify-content:space-between;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 6px 30px rgba(2,6,12,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .brand{display:flex;align-items:center;gap:14px}
+    .logo-plate{width:56px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--neon2),var(--neon1));box-shadow:0 6px 20px rgba(0,255,200,0.06), inset 0 -6px 30px rgba(0,0,0,0.25);font-weight:800;color:#02131a;font-size:20px}
+    .brand h1{margin:0;font-size:1.05rem;letter-spacing:0.6px}
+    .brand p{margin:0;color:var(--muted);font-size:0.85rem}
+    nav{display:flex;gap:10px;align-items:center}
+    .nav-link{color:var(--muted);text-decoration:none;padding:8px 10px;border-radius:8px;font-weight:600;font-size:0.95rem}
+    .nav-link:hover{color:var(--neon1);box-shadow:0 6px 18px rgba(0,255,200,0.06);transform:translateY(-2px)}
+    .hero{margin-top:28px;border-radius:16px;padding:32px;background:linear-gradient(180deg, rgba(7,16,26,0.6), rgba(8,14,20,0.4));border:1px solid rgba(255,255,255,0.03);display:grid;grid-template-columns: 1fr 420px;gap:28px;align-items:center}
+    .hero-left h2{font-size:2.1rem;margin:0 0 10px 0;color:var(--neon1);text-shadow:0 6px 30px rgba(0,255,200,0.06)}
+    .hero-left p{color:var(--muted);font-size:1.05rem;margin:0 0 18px 0}
+    .cta-row{display:flex;gap:12px}
+    .btn{background:linear-gradient(90deg,var(--neon1),var(--accent));border:none;color:#0b0e13;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,255,200,0.06);transition:transform .16s}
+    .btn.ghost{background:transparent;color:var(--neon1);border:1px solid rgba(0,255,200,0.08);font-weight:600}
+    .btn:hover{transform:translateY(-4px)}
+    /* hero right: animated lane preview */
+    .lane-preview{height:300px;border-radius:12px;background:linear-gradient(180deg, rgba(12,18,26,0.6), rgba(6,9,14,0.3));position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.02)}
+    .lane-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+    .lane{border-left:1px solid rgba(255,255,255,0.02);display:flex;align-items:flex-end;justify-content:center;padding-bottom:28px}
+    .runner{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--neon1),var(--neon2));box-shadow:0 10px 30px rgba(124,60,255,0.08), 0 0 18px rgba(0,255,200,0.04);display:flex;align-items:center;justify-content:center;font-weight:800;color:#031217}
+    .obstacle{position:absolute;width:56px;height:18px;background:linear-gradient(90deg,#ff416c,#7c3cff);border-radius:6px;box-shadow:0 6px 18px rgba(124,60,255,0.12);left:50%;transform:translateX(-50%);animation:fall 1.6s linear infinite}
+    .obstacle.alt{background:linear-gradient(90deg,#ffd36b,#ff416c);left:calc(16.6% + 33%)}
+    @keyframes fall {0%{top:-12%}100%{top:110%}}
+    /* info cards area */
+    .content{display:grid;grid-template-columns:1fr;gap:20px;margin-top:22px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.03)}
+    .badge{display:inline-block;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,0.2);color:var(--neon1);font-weight:700;margin-bottom:8px}
+    /* Why choose us */
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .feature{padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02)}
+    .feature h4{margin:0 0 8px 0;color:var(--neon2)}
+    /* provably fair block */
+    .pf pre{background:#031219;padding:14px;border-radius:8px;overflow:auto;color:#bfeef0;border:1px solid rgba(0,255,200,0.04);font-size:0.95rem}
+    .pf p{color:var(--muted);margin:8px 0}
+    /* roadmap */
+    .timeline{display:flex;flex-direction:column;gap:12px}
+    .step{display:flex;gap:12px;align-items:flex-start}
+    .dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(90deg,var(--neon1),var(--neon2));box-shadow:0 6px 18px rgba(0,255,200,0.06)}
+    .step .meta{color:var(--muted)}
+    /* footer */
+    footer{margin-top:28px;padding:22px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.06));display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid rgba(255,255,255,0.02)}
+    .foot-links a{color:var(--muted);margin-left:12px;text-decoration:none}
+    .foot-links a:hover{color:var(--neon1)}
+    /* responsive */
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr; padding:20px}
+      .lane-preview{height:260px}
+      .grid-3{grid-template-columns:1fr}
+    }
+    @media (max-width:520px){
+      .logo-plate{width:46px;height:46px;font-size:16px}
+      .hero-left h2{font-size:1.6rem}
+      header{padding:12px}
+      .wrap{padding:12px}
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <div class="logo">Vector Run Labs</div>
-    <p class="tagline">Provably-fair crypto casino microgames</p>
-  </header>
-  
-  <main>
-    <section id="about">
-      <h1>Who We Are</h1>
-      <p>
-        We are an independent game studio building high-frequency, provably fair games for crypto casinos.
-        Our focus is on fast, scalable, and engaging gameplay with transparent RNG systems.
-      </p>
-    </section>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo-plate" aria-hidden>VR</div>
+        <div>
+          <h1>Vector Run Labs</h1>
+          <p>Provably-fair crypto microgames</p>
+        </div>
+      </div>
+      <nav>
+        <a class="nav-link" href="#games">Games</a>
+        <a class="nav-link" href="#why">Why</a>
+        <a class="nav-link" href="#provable">Provably Fair</a>
+        <a class="nav-link" href="#roadmap">Roadmap</a>
+        <a class="nav-link" href="#contact">Contact</a>
+      </nav>
+    </header>
 
-    <section id="games">
-      <h2>Our Games</h2>
-      <div class="game">
-        <h3>Vector Run</h3>
-        <p>
-          A three-lane survival runner where players dodge obstacles and decide when to cash out.  
-          Simple input, high-speed action, and fully verifiable fairness.
-        </p>
+    <!-- HERO -->
+    <section class="hero" id="hero" aria-labelledby="hero-title">
+      <div class="hero-left">
+        <h2 id="hero-title">Vector Run — Three-lane adrenaline microgame</h2>
+        <p>Pick a lane. Dodge obstacles. Cash out anytime. Fast rounds, transparent RNG, and a tight house edge — designed for high-frequency play on crypto casinos.</p>
+        <div class="cta-row">
+          <button class="btn" onclick="scrollToSection('games')">View Vector Run</button>
+          <button class="btn ghost" onclick="scrollToSection('provable')">Provably Fair</button>
+        </div>
+        <div style="margin-top:16px;color:var(--muted);font-size:0.95rem">Built for scalability and fast integration. Demo & technical appendix available on request.</div>
+      </div>
+
+      <div class="lane-preview" aria-hidden>
+        <!-- animated lanes + runner -->
+        <div class="lane-grid">
+          <div class="lane"><div class="runner" style="transform:translateY(0)">1</div></div>
+          <div class="lane"><div class="runner" style="transform:translateY(0)">2</div></div>
+          <div class="lane"><div class="runner" style="transform:translateY(0)">3</div></div>
+        </div>
+        <!-- moving obstacles (different lanes) -->
+        <div id="obs1" class="obstacle" style="left:16.6%"></div>
+        <div id="obs2" class="obstacle alt" style="left:50%;animation-delay:.7s"></div>
+        <div id="obs3" class="obstacle" style="left:83.4%;animation-delay:.35s"></div>
       </div>
     </section>
 
-    <section id="contact">
-      <h2>Contact Us</h2>
-      <p>Email: <a href="mailto:deep1907b@gmail.com">deep1907b@gmail.com</a></p>
-      <p>GitHub: <a href="https://github.com/dpkchoudhary0911">github.com/dpkchoudhary0911</a></p>
-    </section>
-  </main>
+    <!-- CONTENT -->
+    <div class="content">
+      <!-- Vector Run detailed card -->
+      <section id="games" class="card" aria-labelledby="games-title">
+        <span class="badge">Featured</span>
+        <h2 id="games-title">Vector Run — Game Details</h2>
+        <p class="meta" style="color:var(--muted)">Fast microgame, 3 lanes, step-by-step rounds. Designed for short sessions and high volume.</p>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:12px">
+          <div style="flex:1;min-width:240px">
+            <h3>Core mechanics</h3>
+            <ul style="color:var(--muted);margin-top:6px">
+              <li>Player chooses one of three lanes</li>
+              <li>Each step may spawn an obstacle in a lane</li>
+              <li>Hit an obstacle → bust. Survive → multiplier increases</li>
+              <li>Cash out any time. Multiplier grows linearly per step</li>
+            </ul>
+          </div>
+          <div style="flex:1;min-width:240px">
+            <h3>Tunable parameters</h3>
+            <ul style="color:var(--muted);margin-top:6px">
+              <li>Obstacle probability (easy/med/hard)</li>
+              <li>Step multiplier factor (controls house edge)</li>
+              <li>Tick rate (400–800ms) to balance volume vs. control</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
-  <footer>
-    <p>&copy; 2025 Vector Run Labs</p>
-  </footer>
+      <!-- Why choose us -->
+      <section id="why" class="card">
+        <h2>Why Choose Vector Run Labs</h2>
+        <div class="grid-3" style="margin-top:12px">
+          <div class="feature">
+            <h4>Provably Fair</h4>
+            <p class="meta">HMAC-SHA256 RNG with server_seed commitment. Full reproducibility for audits and players.</p>
+          </div>
+          <div class="feature">
+            <h4>High Throughput</h4>
+            <p class="meta">Lightweight rendering, minimal server overhead — built to scale for heavy concurrent traffic.</p>
+          </div>
+          <div class="feature">
+            <h4>Player Retention</h4>
+            <p class="meta">Short rounds, dopamine micro-rewards, and social-ready near-miss visuals increase session length.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Provably fair explanation -->
+      <section id="provable" class="card pf" aria-labelledby="pf-title">
+        <h2 id="pf-title">Provably Fair — How it works</h2>
+        <p>Every round is deterministically derived from cryptographic inputs so players can verify outcomes after the round:</p>
+        <ol style="color:var(--muted)">
+          <li>Server publishes <strong>server_seed_hash = SHA256(server_seed)</strong> (commitment) before rounds.</li>
+          <li>Player provides a <em>client_seed</em> (or one is generated).</li>
+          <li>For round <em>nonce</em>, compute <strong>HMAC_SHA256(server_seed, client_seed + ':' + nonce)</strong> to derive bytes.</li>
+          <li>Use bytes to decide obstacle spawn and lane selection. Reveal <em>server_seed</em> after the round so anyone can reproduce and verify.</li>
+        </ol>
+        <p class="meta">Verification snippet (example, server-side or player tool):</p>
+        <pre>// Example (Node.js)
+const crypto = require('crypto');
+function hmac(serverSeed, clientSeed, nonce){
+  return crypto.createHmac('sha256', Buffer.from(serverSeed,'hex')).update(`${clientSeed}:${nonce}`).digest('hex');
+}
+console.log(hmac(serverSeedHex, clientSeed, nonce));
+// Re-run obstacle mapping exactly to verify.</pre>
+        <p style="color:var(--muted)">We include a verification page and demo on request for audits.</p>
+      </section>
+
+      <!-- About the studio -->
+      <section id="about-studio" class="card">
+        <h2>About Vector Run Labs</h2>
+        <p style="color:var(--muted)">Independent studio focused on building provably-fair casino microgames optimized for crypto platforms. Our first product streamlines integration, minimizes client resources, and ships with a full technical appendix for partner review.</p>
+      </section>
+
+      <!-- Roadmap -->
+      <section id="roadmap" class="card">
+        <h2>Roadmap & Vision</h2>
+        <div class="timeline" style="margin-top:10px">
+          <div class="step"><div class="dot"></div><div class="meta"><strong>Q4 2025:</strong> Production-ready Vector Run build, integration kit & Stake pitch packet.</div></div>
+          <div class="step"><div class="dot"></div><div class="meta"><strong>Q1 2026:</strong> Launch multi-difficulty modes, telemetry dashboard for house-edge tuning.</div></div>
+          <div class="step"><div class="dot"></div><div class="meta"><strong>Q2 2026:</strong> Additional microgames (binary tick, charge-up) and cross-promo features.</div></div>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section id="contact" class="card">
+        <h2>Contact</h2>
+        <p style="color:var(--muted)">Want the demo, integration docs, or the pitch packet? Contact:</p>
+        <p><strong>Email:</strong> <a href="mailto:deep1907b@gmail.com">deep1907b@gmail.com</a></p>
+        <p><strong>GitHub:</strong> <a href="https://github.com/dpkchoudhary0911">github.com/dpkchoudhary0911</a></p>
+        <p style="color:var(--muted);margin-top:8px">If you want a downloadable tech appendix (server code, simulation reports, house-edge tuning), reply and I’ll produce the package.</p>
+      </section>
+    </div>
+
+    <!-- footer -->
+    <footer>
+      <div>&copy; 2025 Vector Run Labs</div>
+      <div class="foot-links">
+        <a href="#hero">Home</a>
+        <a href="#provable">Provably Fair</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // small UX helpers
+    function scrollToSection(id){
+      document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    // subtle runner/obstacle variance for the hero preview
+    (function animatePreview(){
+      const obs = [document.getElementById('obs1'), document.getElementById('obs2'), document.getElementById('obs3')];
+      function randomize(){
+        obs.forEach((o,i)=>{
+          const laneLeft = [16.6,50,83.4][i];
+          const jitter = (Math.random()-0.5)*6;
+          o.style.left = (laneLeft + jitter) + '%';
+          o.style.animationDuration = (1.2 + Math.random()*0.9).toFixed(2) + 's';
+          o.style.opacity = 0.9 - Math.random()*0.35;
+        });
+      }
+      setInterval(randomize, 900);
+      randomize();
+    })();
+  </script>
 </body>
 </html>
