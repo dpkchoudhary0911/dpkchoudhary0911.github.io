@@ -2,183 +2,54 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Vector Run — Mobile Demo</title>
-<meta name="description" content="Playable mobile-friendly deterministic demo of Vector Run using SHA-256 seeds." />
-
 <style>
-:root {
-  --bg: #071017;
-  --panel: #0f1620;
-  --muted: #9fbac2;
-  --accent: #28f0d0;
-  --accent2: #7a5bff;
-  --white: #dff5f1;
-}
-
-html, body {
-  margin: 0;
-  font-family: Inter, Arial, Helvetica, sans-serif;
-  background: linear-gradient(180deg,#051015,#071018);
-  color: var(--white);
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-  scroll-behavior: smooth;
-}
-
-.wrap {
-  max-width: 960px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-h1 { margin: 0 0 6px 0; font-size: 20px; color: var(--accent); }
-p.lead { margin: 6px 0 18px 0; color: var(--muted); font-size: 14px; }
-
-.panel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.03);
-  padding: 12px;
-  border-radius: 10px;
-}
-
-.top-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
-
-label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
-input[type="text"], input[type="number"] {
-  width: 100%;
-  max-width: 260px;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.04);
-  background: rgba(0,0,0,0.25);
-  color: var(--white);
-}
-
-button {
-  cursor: pointer;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 0;
-  background: linear-gradient(90deg,var(--accent),var(--accent2));
-  color: #041219;
-  font-weight: 700;
-}
-
-button.ghost {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.04);
-  color: var(--accent);
-}
-
-.game-area {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-#canvasWrap {
-  flex: 1;
-  min-width: 300px;
-  background: linear-gradient(180deg,#071018,#041018);
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.03);
-}
-
-canvas {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  touch-action: none; /* only for canvas taps */
-}
-
-.hud {
-  width: 280px;
-  min-width: 200px;
-}
-
-.hud .box {
-  background: rgba(255,255,255,0.02);
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.03);
-  margin-bottom: 12px;
-}
-
-.muted { color: var(--muted); }
-.big { font-size: 18px; font-weight: 700; }
-
-.lane-buttons { display: flex; gap: 8px; margin-top: 6px; }
-.lane-buttons button { flex: 1; }
-
-footer { margin-top: 18px; color: var(--muted); font-size: 13px; text-align: center; }
-
-@media(max-width:860px){
-  .game-area { flex-direction: column; }
-  .hud { width: 100%; }
-}
+  :root{
+    --bg:#071017; --panel:#0f1620; --muted:#9fbac2; --accent:#28f0d0; --accent2:#7a5bff;
+  }
+  body{
+    margin:0; font-family:Inter,Arial,sans-serif; background:linear-gradient(180deg,#051015,#071018);
+    color:#dff5f1; display:flex; justify-content:center; padding:16px; overflow-x:hidden;
+  }
+  .wrap{width:100%; max-width:960px;}
+  h1{margin:0 0 8px 0;font-size:20px;color:var(--accent)}
+  p.lead{margin:6px 0 18px 0;color:var(--muted)}
+  .panel{background:var(--panel); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); margin-bottom:12px;}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;}
+  input[type="text"], input[type="number"]{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(0,0,0,0.25);color:inherit;width:100%;}
+  button{cursor:pointer;padding:10px 12px;border-radius:8px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#041219;font-weight:700;}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--accent);}
+  .controls{display:flex;gap:12px;flex-wrap:wrap;}
+  .game-area{display:flex;gap:12px;flex-wrap:wrap;}
+  #canvasWrap{flex:1; position:relative; border-radius:12px; overflow:hidden; background:linear-gradient(180deg,#071018,#041018);}
+  canvas{width:100%; display:block; touch-action:none;}
+  .hud{width:300px; min-width:260px;}
+  .hud .box{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;margin-bottom:12px;}
+  .muted{color:var(--muted);}
+  .big{font-size:18px;font-weight:700;}
+  .lane-buttons{display:flex;gap:8px;margin-top:8px;}
+  .lane-buttons button{flex:1;padding:10px;}
+  footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center;}
+  @media(max-width:860px){ .game-area{flex-direction:column} .hud{width:100%} }
 </style>
 </head>
-
 <body>
 <div class="wrap">
   <h1>Vector Run — Mobile Demo</h1>
-  <p class="lead">Use server_seed + client_seed + nonce to generate deterministic obstacles. Press <strong>Start Round</strong>, tap lanes or use buttons to move. Cash out anytime.</p>
+  <p class="lead">Demo generates obstacles deterministically from <strong>server_seed + client_seed + nonce</strong>. Use lane buttons, keyboard, or tap canvas. Cash out anytime.</p>
 
-  <div class="top-row">
-    <div class="panel">
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <div style="flex:1 1 120px;">
-          <label>Server seed</label>
-          <input id="serverSeed" type="text" placeholder="hex seed"/>
-        </div>
-        <div style="flex:1 1 120px;">
-          <label>Client seed</label>
-          <input id="clientSeed" type="text" placeholder="any text"/>
-        </div>
-        <div style="flex:1 1 60px;">
-          <label>Nonce</label>
-          <input id="nonce" type="number" min="0" value="1"/>
-        </div>
-        <div style="align-self:end;">
-          <button id="genBtn" class="ghost">Generate Seeds</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="hud panel">
-      <div class="box">
-        <div class="muted">Round</div>
-        <div id="roundState" class="big">Idle</div>
-      </div>
-      <div class="box">
-        <div class="muted">Step</div>
-        <div id="step" class="big">0</div>
-      </div>
-      <div class="box">
-        <div class="muted">Multiplier</div>
-        <div id="mult" class="big">1.00x</div>
-      </div>
-      <div class="box">
-        <button id="startBtn">Start Round</button>
-        <button id="cashBtn" class="ghost" disabled>Cash Out</button>
-      </div>
-      <div class="box">
-        <div class="muted">Controls</div>
-        <div class="lane-buttons">
-          <button id="lane0">Left</button>
-          <button id="lane1">Middle</button>
-          <button id="lane2">Right</button>
-        </div>
-      </div>
-      <div class="box">
-        <div class="muted">Seed preview</div>
-        <div id="seedPreview" class="muted" style="word-break:break-all"></div>
-      </div>
+  <div class="panel">
+    <label>Server Seed</label>
+    <input id="serverSeed" type="text" placeholder="server seed (hex)">
+    <label>Client Seed</label>
+    <input id="clientSeed" type="text" placeholder="client seed">
+    <label>Nonce</label>
+    <input id="nonce" type="number" min="0" value="1">
+    <div class="controls" style="margin-top:8px;">
+      <button id="genBtn" class="ghost">Generate Seeds</button>
+      <button id="startBtn">Start Round</button>
+      <button id="cashBtn" class="ghost" disabled>Cash Out</button>
     </div>
   </div>
 
@@ -186,182 +57,166 @@ footer { margin-top: 18px; color: var(--muted); font-size: 13px; text-align: cen
     <div id="canvasWrap">
       <canvas id="gameCanvas" width="720" height="360"></canvas>
     </div>
+    <div class="hud">
+      <div class="box">
+        <div class="muted">Round</div>
+        <div id="roundState" class="big">Idle</div>
+      </div>
+      <div class="box">
+        <div class="muted">Step</div>
+        <div id="stepDisplay" class="big">0</div>
+      </div>
+      <div class="box">
+        <div class="muted">Multiplier</div>
+        <div id="multDisplay" class="big">1.00x</div>
+      </div>
+      <div class="box">
+        <div class="muted">Lane Controls</div>
+        <div class="lane-buttons">
+          <button id="lane0">Left</button>
+          <button id="lane1">Middle</button>
+          <button id="lane2">Right</button>
+        </div>
+      </div>
+      <div class="box">
+        <div class="muted">Seed Preview</div>
+        <div id="seedPreview" class="muted" style="word-break:break-word"></div>
+      </div>
+    </div>
   </div>
-
-  <footer>Demo uses SHA-256 for deterministic RNG. Server-side implementation required for production.</footer>
+  <footer>Mobile-friendly Vector Run demo. Canvas scales, buttons work, page scroll is normal.</footer>
 </div>
 
 <script>
-/* =========================
-   Mobile-friendly Vector Run
-   ========================= */
-
-/* Helpers */
+/* ===== Utilities ===== */
 function bytesToHex(bytes){ return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join(''); }
 async function sha256Bytes(data){ return new Uint8Array(await crypto.subtle.digest('SHA-256', data)); }
-function randHex(len=64){ const a = new Uint8Array(len/2); crypto.getRandomValues(a); return bytesToHex(a); }
+function randHex(len=64){ const a=new Uint8Array(len/2); crypto.getRandomValues(a); return bytesToHex(a); }
 
+/* ===== DetermRNG ===== */
 class DetermRNG {
-  constructor(server, client, nonce){
-    this.server = server||''; this.client=client||''; this.nonce=String(nonce||'0');
-    this.counter=0; this.buf=new Uint8Array([]); this.i=0;
+  constructor(serverSeed, clientSeed, nonce){
+    this.serverSeed = serverSeed||'';
+    this.clientSeed = clientSeed||'';
+    this.nonce = String(nonce||'0');
+    this.counter=0; this.buffer=new Uint8Array([]); this.index=0;
   }
   async refill(){
-    const msg = `${this.server}:${this.client}:${this.nonce}:${this.counter}`;
+    const msg = `${this.serverSeed}:${this.clientSeed}:${this.nonce}:${this.counter}`;
     const enc = new TextEncoder().encode(msg);
     const hash = await sha256Bytes(enc);
-    const nbuf = new Uint8Array(this.buf.length + hash.length);
-    nbuf.set(this.buf); nbuf.set(hash,this.buf.length);
-    this.buf = nbuf; this.counter++; 
+    const newBuf = new Uint8Array(this.buffer.length + hash.length);
+    newBuf.set(this.buffer); newBuf.set(hash,this.buffer.length);
+    this.buffer = newBuf; this.index=0; this.counter++;
   }
-  async nextByte(){ if(this.i>=this.buf.length) await this.refill(); return this.buf[this.i++]; }
-  async nextFloat(){
-    const b0=await this.nextByte(),b1=await this.nextByte(),b2=await this.nextByte(),b3=await this.nextByte();
-    const int = ((b0<<24)|(b1<<16)|(b2<<8)|b3)>>>0;
-    return int / 4294967296;
-  }
+  async nextByte(){ if(this.index>=this.buffer.length) await this.refill(); return this.buffer[this.index++]; }
+  async nextFloat(){ const b0=await this.nextByte(),b1=await this.nextByte(),b2=await this.nextByte(),b3=await this.nextByte();
+    return (((b0<<24)|(b1<<16)|(b2<<8)|b3)>>>0)/4294967296; }
 }
 
-/* DOM elements */
-const serverEl = document.getElementById('serverSeed'),
-      clientEl = document.getElementById('clientSeed'),
-      nonceEl = document.getElementById('nonce'),
-      genBtn = document.getElementById('genBtn'),
-      startBtn = document.getElementById('startBtn'),
-      cashBtn = document.getElementById('cashBtn'),
-      roundEl = document.getElementById('roundState'),
-      stepEl = document.getElementById('step'),
-      multEl = document.getElementById('mult'),
-      seedPreviewEl = document.getElementById('seedPreview'),
-      laneBtns = [0,1,2].map(i=>document.getElementById('lane'+i));
+/* ===== DOM ===== */
+const canvas=document.getElementById('gameCanvas'); const ctx=canvas.getContext('2d');
+const serverEl=document.getElementById('serverSeed'), clientEl=document.getElementById('clientSeed'), nonceEl=document.getElementById('nonce');
+const genBtn=document.getElementById('genBtn'), startBtn=document.getElementById('startBtn'), cashBtn=document.getElementById('cashBtn');
+const roundStateEl=document.getElementById('roundState'), stepEl=document.getElementById('stepDisplay'), multEl=document.getElementById('multDisplay'), seedPreviewEl=document.getElementById('seedPreview');
+const laneBtns=[0,1,2].map(i=>document.getElementById('lane'+i));
 
-/* Canvas */
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-let W=canvas.width,H=canvas.height;
+/* ===== Game State ===== */
+let rng=null, playing=false, step=0, lane=1, obstacles=[], stepInterval=700, stepTimer=null, stepFactor=0.22;
+
+/* ===== Resize ===== */
 function resizeCanvas(){
-  const rect = canvas.parentElement.getBoundingClientRect();
-  W=rect.width; H=W*0.5; canvas.width=W; canvas.height=H; draw();
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.width * 0.5;
+  draw();
 }
-window.addEventListener('resize',resizeCanvas);
+window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-/* Game state */
-let rng=null, playing=false, step=0, lane=1, obstacles=[], stepInterval=700, stepFactor=0.2, lastTime=0, accumulator=0;
-
-/* UI events */
-genBtn.onclick=()=>{
-  serverEl.value = randHex(64);
-  clientEl.value = Math.random().toString(36).slice(2,12);
-  nonceEl.value = Math.floor(Math.random()*999);
-};
-
-laneBtns.forEach((btn,i)=>btn.onclick=()=> lane=i);
-canvas.addEventListener('touchstart',e=>{
-  const x = e.touches[0].clientX - canvas.getBoundingClientRect().left;
-  lane = Math.min(2, Math.max(0, Math.floor(x/(canvas.width/3))));
-}, {passive:false});
-
-document.addEventListener('keydown', e=>{
-  if(e.key==='ArrowLeft') lane=Math.max(0,lane-1);
-  if(e.key==='ArrowRight') lane=Math.min(2,lane+1);
-});
-
-/* HUD */
+/* ===== HUD ===== */
 function updateHUD(){
+  roundStateEl.textContent = playing?'LIVE':'Idle';
   stepEl.textContent = step;
   multEl.textContent = (1+step*stepFactor).toFixed(2)+'x';
-  seedPreviewEl.textContent = `server:${serverEl.value}\nclient:${clientEl.value}\nnonce:${nonceEl.value}`;
-  roundEl.textContent = playing?'LIVE':'Idle';
+  seedPreviewEl.textContent=`server: ${serverEl.value}\nclient: ${clientEl.value}\nnonce: ${nonceEl.value}`;
 }
 
-/* Obstacles */
-async function precomputeObstacles(max=400){
+/* ===== Lane ===== */
+function chooseLane(l){ lane=l; draw(); }
+laneBtns.forEach((btn,i)=>btn.addEventListener('click',()=>chooseLane(i)));
+canvas.addEventListener('pointerdown', e=>{
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  chooseLane(Math.min(2, Math.max(0, Math.floor(x / (canvas.width/3)))));
+});
+
+/* ===== Keyboard ===== */
+document.addEventListener('keydown', e=>{ if(e.key==='ArrowLeft') chooseLane(Math.max(0,lane-1)); if(e.key==='ArrowRight') chooseLane(Math.min(2,lane+1)); });
+
+/* ===== Generate obstacles ===== */
+async function generateObstacles(maxSteps=200){
   obstacles=[];
-  for(let s=1;s<=max;s++){
+  for(let s=1;s<=maxSteps;s++){
     const f=await rng.nextFloat();
-    if(f<0.32){
-      const b=await rng.nextByte();
-      obstacles.push({step:s,lane:b%3});
-    }else obstacles.push({step:s,lane:null});
+    if(f<0.33){ const b=await rng.nextByte(); obstacles.push({step:s,lane:b%3}); } else obstacles.push({step:s,lane:null});
   }
 }
 
-/* Logic step */
-function doStep(){
-  step++;
-  const ob = obstacles[step-1];
-  if(ob && ob.lane!==null && ob.lane===lane){
-    playing=false; roundEl.textContent=`BUST @ ${step}`;
-    cashBtn.disabled=true; startBtn.disabled=false;
-  }
-  updateHUD();
-}
+/* ===== Start / Cash Out ===== */
+genBtn.addEventListener('click', ()=>{
+  serverEl.value = randHex(64); clientEl.value = Math.random().toString(36).slice(2,12); nonceEl.value = Math.floor(Math.random()*999);
+});
 
-/* Main loop */
-function loop(now){
-  if(!playing){ draw(); return; }
-  if(!lastTime) lastTime=now;
-  const dt=now-lastTime; lastTime=now;
-  accumulator+=dt;
-  while(accumulator>=stepInterval){
-    accumulator-=stepInterval; doStep();
-    if(!playing) break;
-  }
-  draw();
-  if(playing) requestAnimationFrame(loop);
-}
-
-/* Start / Cash */
-startBtn.onclick=async()=>{
+startBtn.addEventListener('click', async ()=>{
   if(playing) return;
-  rng=new DetermRNG(serverEl.value,clientEl.value,nonceEl.value);
-  await rng.refill(); await precomputeObstacles();
-  step=0; lane=1; accumulator=0; lastTime=performance.now();
-  playing=true; startBtn.disabled=true; cashBtn.disabled=false; updateHUD();
-  requestAnimationFrame(loop);
-};
+  rng = new DetermRNG(serverEl.value, clientEl.value||'demo', nonceEl.value||'1'); await rng.refill();
+  await generateObstacles(200);
+  step=0; lane=1; playing=true; updateHUD();
+  startBtn.disabled=true; cashBtn.disabled=false;
 
-cashBtn.onclick=()=>{
+  stepTimer=setInterval(()=>{
+    step++;
+    updateHUD();
+    const ob=obstacles[step-1];
+    if(ob && ob.lane!==null && ob.lane===lane){
+      playing=false; clearInterval(stepTimer); startBtn.disabled=false; cashBtn.disabled=true;
+      roundStateEl.textContent=`BUST @ ${step}`;
+      draw(); return;
+    }
+    draw();
+  }, stepInterval);
+});
+
+cashBtn.addEventListener('click', ()=>{
   if(!playing) return;
-  playing=false; startBtn.disabled=false; cashBtn.disabled=true;
-  roundEl.textContent=`CASHED @ ${step} → ${(1+step*stepFactor).toFixed(2)}x`;
-  updateHUD();
-};
+  playing=false; clearInterval(stepTimer); startBtn.disabled=false; cashBtn.disabled=true;
+  roundStateEl.textContent=`CASHED @ step ${step} → ${(1+step*stepFactor).toFixed(2)}x`;
+  draw();
+});
 
-/* Drawing */
+/* ===== Drawing ===== */
 function draw(){
-  ctx.fillStyle="#041018"; ctx.fillRect(0,0,W,H);
-  const lw=W/3;
-  for(let i=0;i<3;i++){
-    ctx.fillStyle=(i%2===0)?"#061826":"#051720";
-    ctx.fillRect(i*lw,0,lw,H);
-  }
-  const rx=lane*lw+lw/2, ry=H-56;
-  ctx.fillStyle="#28f0d0"; ctx.beginPath(); ctx.roundRect(rx-26,ry-36,52,52,8); ctx.fill();
-  ctx.fillStyle="#041018"; ctx.font="700 18px Inter"; ctx.textAlign="center"; ctx.textBaseline="middle";
-  ctx.fillText((lane+1),rx,ry-12);
+  const cw=canvas.width,ch=canvas.height; ctx.fillStyle='#041018'; ctx.fillRect(0,0,cw,ch);
+  const laneW=cw/3;
+  for(let i=0;i<3;i++){ ctx.fillStyle=(i%2===0?'#061826':'#051720'); ctx.fillRect(i*laneW,0,laneW,ch); }
+  // runner
+  const ry=ch-46,rx=lane*laneW+laneW/2; ctx.fillStyle='#28f0d0'; ctx.beginPath(); ctx.roundRect(rx-22,ry-34,44,44,8); ctx.fill();
+  ctx.fillStyle='#041217'; ctx.font='700 18px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(lane+1,rx,ry-12);
+  // obstacles
   const preview=8;
   for(let i=1;i<=preview;i++){
     const idx=step+i-1; if(idx>=obstacles.length) continue;
     const ob=obstacles[idx]; if(!ob||ob.lane===null) continue;
-    const frac=i/(preview+1); const y=30+frac*(H-120); const cx=ob.lane*lw+lw/2; const w=48-i*3;
-    ctx.fillStyle=(i===1)?"#ff6b6b":"#7c3cff";
-    ctx.beginPath(); ctx.roundRect(cx-w/2,y,w,16,6); ctx.fill();
+    const y=30+i/(preview+1)*(ch-120),cx=ob.lane*laneW+laneW/2,w=48-i*3;
+    ctx.fillStyle=(i===1?'#ff6b6b':'#7c3cff'); ctx.beginPath(); ctx.roundRect(cx-w/2,y,w,16,6); ctx.fill();
   }
 }
 
-/* polyfill roundRect */
-if(!CanvasRenderingContext2D.prototype.roundRect){
-  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
-    this.beginPath();
-    this.moveTo(x+r,y); this.arcTo(x+w,y,x+w,y+h,r); this.arcTo(x+w,y+h,x,y+h,r); this.arcTo(x,y+h,x,y,r); this.arcTo(x,y,x+w,y,r);
-    this.closePath();
-  };
-}
+/* ===== Polyfill roundRect ===== */
+if(!CanvasRenderingContext2D.prototype.roundRect){ CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){ if(typeof r==='number') r={tl:r,tr:r,br:r,bl:r}; this.beginPath(); this.moveTo(x+r.tl,y); this.arcTo(x+w,y,x+w,y+h,r.tr); this.arcTo(x+w,y+h,x,y+h,r.br); this.arcTo(x,y+h,x,y,r.bl); this.arcTo(x,y,x+w,y,r.tl); this.closePath(); }; }
 
-/* Init */
-updateHUD(); draw();
+/* ===== Init ===== */
+draw(); updateHUD();
 </script>
 </body>
 </html>
