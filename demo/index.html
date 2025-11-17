@@ -3,405 +3,379 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Vector Run — Demo Prototype</title>
-<meta name="description" content="Playable deterministic demo of Vector Run. Uses SHA-256 of seeds for deterministic RNG." />
+<title>Vector Run — Clean Demo (60 FPS)</title>
+<meta name="description" content="Smooth minimal Vector Run demo — deterministic obstacles via SHA-256 seeds." />
 <style>
   :root{
-    --bg:#071017; --panel:#0f1620; --muted:#9fbac2; --accent:#28f0d0; --accent2:#7a5bff;
+    --bg:#0f1216;
+    --panel:#12161a;
+    --muted:#9aa9b1;
+    --accent:#2fbf9f;
+    --accent2:#6b6fff;
+    --white:#e6eef1;
   }
-  body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#051015,#071018);color:#dff5f1;display:flex;min-height:100vh;align-items:flex-start;justify-content:center;padding:28px;}
-  .wrap{width:100%;max-width:980px}
-  h1{margin:0 0 8px 0;font-size:20px;color:var(--accent)}
-  p.lead{margin:6px 0 18px 0;color:var(--muted)}
-  .top-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:12px;border-radius:10px}
-  label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-  input[type="text"], input[type="number"]{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(0,0,0,0.25);color:inherit;width:260px}
-  button{cursor:pointer;padding:10px 12px;border-radius:8px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#041219;font-weight:700}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071018);color:var(--white);font-family:Inter,Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:18px auto;padding:16px}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  header h1{font-size:18px;margin:0}
+  header p{margin:0;color:var(--muted);font-size:13px}
+
+  .panel{background:var(--panel);border:1px solid rgba(255,255,255,0.03);padding:12px;border-radius:10px}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+  input[type="text"], input[type="number"]{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(0,0,0,0.18);color:var(--white);width:220px}
+  button{background:linear-gradient(90deg,var(--accent),var(--accent2));border:0;padding:10px 12px;border-radius:8px;color:#041018;font-weight:700;cursor:pointer}
   button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--accent)}
-  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .game-area{margin-top:18px;display:flex;gap:18px;align-items:flex-start}
-  #canvasWrap{background:linear-gradient(180deg,#071018,#041018);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-  canvas{display:block;background:#07131a;border-radius:8px}
+  .muted{color:var(--muted);font-size:13px}
+
+  .game-wrap{display:flex;gap:14px;margin-top:14px;align-items:flex-start}
+  .canvas-panel{flex:1;display:flex;justify-content:center}
+  canvas{background:#0b0f12;border-radius:8px;display:block;touch-action:none}
   .hud{width:300px}
-  .hud .box{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);margin-bottom:12px}
-  .muted{color:var(--muted)}
+  .hud .box{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);margin-bottom:12px}
   .big{font-size:18px;font-weight:700}
-  .lane-buttons{display:flex;gap:8px;margin-top:8px}
-  .lane-buttons button{flex:1;padding:10px}
-  .info{font-size:13px;color:var(--muted)}
-  footer{margin-top:18px;color:var(--muted);font-size:13px}
-  @media(max-width:860px){ .game-area{flex-direction:column} .hud{width:100%}}
+  .lane-controls{display:flex;gap:8px;margin-top:8px}
+  .lane-controls button{flex:1;padding:9px}
+  .status{margin-top:6px;color:var(--muted);font-size:13px}
+
+  footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+  @media(max-width:860px){ .game-wrap{flex-direction:column} .hud{width:100%} canvas{width:100%} }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Vector Run — Playable Demo (Deterministic)</h1>
-    <p class="lead">This demo generates obstacle patterns from <strong>server_seed + client_seed + nonce</strong> using SHA-256. Enter seeds below and press <em>Start Round</em>. Use lane buttons or ←/→ to change lane. Cash out anytime.</p>
+    <header>
+      <div>
+        <h1>Vector Run — Clean Demo</h1>
+        <p class="muted">Minimal, smooth, deterministic. Uses SHA-256 seeds to precompute obstacles.</p>
+      </div>
+      <div class="muted">Controls: ← / → or tap lanes</div>
+    </header>
 
-    <div class="top-row">
-      <div class="panel">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <div>
-            <label>Server seed (hex)</label>
-            <input id="serverSeed" type="text" placeholder="server seed (random hex)"/>
-          </div>
-          <div>
-            <label>Client seed</label>
-            <input id="clientSeed" type="text" placeholder="client seed (any text)"/>
-          </div>
-          <div>
-            <label>Nonce</label>
-            <input id="nonce" type="number" min="0" value="1"/>
-          </div>
-          <div style="align-self:end;">
-            <button id="genSeedsBtn" class="ghost">Generate seeds</button>
-          </div>
-        </div>
-        <div style="margin-top:10px" class="info muted">
-          <div><strong>Note:</strong> In production the server publishes SHA256(server_seed) before rounds and reveals server_seed after the round.</div>
-        </div>
+    <div class="panel row">
+      <div>
+        <label>Server seed (hex)</label>
+        <input id="serverSeed" type="text" placeholder="server seed (hex)"/>
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:8px;width:320px">
-        <div class="panel hud">
-          <div class="box">
-            <div class="muted">Round</div>
-            <div id="roundInfo" class="big">Not started</div>
-          </div>
-          <div class="box">
-            <div class="muted">Current Step</div>
-            <div id="stepDisplay" class="big">0</div>
-          </div>
-          <div class="box">
-            <div class="muted">Multiplier</div>
-            <div id="multDisplay" class="big">1.00x</div>
-          </div>
-          <div class="box">
-            <button id="startBtn">Start Round</button>
-            <button id="cashBtn" class="ghost" disabled>Cash Out</button>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="muted">Controls</div>
-          <div class="lane-buttons">
-            <button id="lane0">Left ←</button>
-            <button id="lane1">Middle</button>
-            <button id="lane2">Right →</button>
-          </div>
-          <div style="margin-top:8px" class="info muted">Keyboard: ← and → change lane. Tap lane buttons on mobile.</div>
-        </div>
+      <div>
+        <label>Client seed</label>
+        <input id="clientSeed" type="text" placeholder="client seed" />
+      </div>
+
+      <div>
+        <label>Nonce</label>
+        <input id="nonce" type="number" min="0" value="1" />
+      </div>
+
+      <div style="align-self:end">
+        <button id="genBtn" class="ghost">Generate seeds</button>
       </div>
     </div>
 
-    <div class="game-area">
-      <div id="canvasWrap" class="panel" style="flex:1">
-        <canvas id="gameCanvas" width="720" height="320" aria-label="Vector Run demo canvas"></canvas>
+    <div class="game-wrap">
+      <div class="canvas-panel panel">
+        <canvas id="game" width="720" height="360" aria-label="Vector Run gameplay canvas"></canvas>
       </div>
 
-      <div class="hud" aria-hidden>
+      <aside class="hud">
         <div class="box">
-          <div class="muted">Deterministic Preview</div>
+          <div class="muted">Round</div>
+          <div id="roundState" class="big">Idle</div>
+        </div>
+
+        <div class="box">
+          <div class="muted">Step</div>
+          <div id="step" class="big">0</div>
+        </div>
+
+        <div class="box">
+          <div class="muted">Multiplier</div>
+          <div id="mult" class="big">1.00x</div>
+        </div>
+
+        <div class="box">
+          <button id="start">Start</button>
+          <button id="cash" class="ghost" disabled>Cash Out</button>
+        </div>
+
+        <div class="box">
+          <div class="muted">Touch lanes</div>
+          <div class="lane-controls">
+            <button id="laneL">Left</button>
+            <button id="laneM">Mid</button>
+            <button id="laneR">Right</button>
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="muted">Seed preview</div>
           <div id="seedPreview" class="muted" style="word-break:break-all"></div>
         </div>
-        <div class="box">
-          <div class="muted">Last Outcome</div>
-          <div id="lastOutcome" class="muted">—</div>
-        </div>
-      </div>
+      </aside>
     </div>
 
-    <footer>Demo uses SHA-256 via browser Crypto API to produce deterministic bytes. This is a frontend demo — server-side authoritative implementation required for production.</footer>
+    <footer>Demo is client-side for presentation. Production must run RNG server-side and reveal server seed after round.</footer>
   </div>
 
 <script>
-/* =========================
-   Vector Run Deterministic Demo
-   - Obstacles derived from SHA-256(serverSeed + ":" + clientSeed + ":" + counter)
-   - Uses bytes of digest as PRNG stream
-   - Simple lane collision & multiplier
-   ========================= */
-
-/* Utilities: hex <-> bytes */
-function hexToBytes(hex){
-  if(!hex) return new Uint8Array();
-  const h = hex.replace(/^0x/,'');
-  const bytes = new Uint8Array(h.length/2);
-  for(let i=0;i<bytes.length;i++) bytes[i]=parseInt(h.substr(i*2,2),16);
-  return bytes;
-}
-function bytesToHex(bytes){
-  return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-/* SHA-256 helper returning Promise<Uint8Array> */
-async function sha256Bytes(dataBytes){
-  const hash = await crypto.subtle.digest('SHA-256', dataBytes);
-  return new Uint8Array(hash);
-}
-
-/* Deterministic RNG: create stream from seedBlob, then call nextByte() repeatedly.
-   seedBlob = UTF8(serverSeed) + ":" + UTF8(clientSeed) + ":" + nonce + ":" + counter
+/* Minimal Clean Vector Run — smooth game loop + deterministic pregen obstacles.
+   Approach:
+   - Use SHA-256 to create DetermRNG (same idea as earlier) but precompute obstacle array before start.
+   - Game loop uses requestAnimationFrame, delta-time, and a fixed step timer for obstacle arrival speed.
 */
+
+/* ---------- Utilities ---------- */
+function bytesToHex(bytes){ return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+async function sha256Bytes(data){ const h = await crypto.subtle.digest('SHA-256', data); return new Uint8Array(h); }
+function randHex(len=64){ const a = new Uint8Array(len/2); crypto.getRandomValues(a); return bytesToHex(a); }
+
+/* ---------- DetermRNG (pre-fill using async) ---------- */
 class DetermRNG {
   constructor(serverSeed, clientSeed, nonce){
-    // normalize hex serverSeed: if empty, use ""
     this.serverSeed = serverSeed || '';
     this.clientSeed = clientSeed || '';
-    this.nonce = String(nonce||'0');
+    this.nonce = String(nonce || '0');
     this.counter = 0;
-    this.buffer = new Uint8Array([]);
-    this.bufferIndex = 0;
+    this.buf = new Uint8Array([]);
+    this.i = 0;
   }
   async refill(){
-    // create message bytes
     const msg = `${this.serverSeed}:${this.clientSeed}:${this.nonce}:${this.counter}`;
     const enc = new TextEncoder().encode(msg);
     const hash = await sha256Bytes(enc);
-    // append hash to buffer (extend)
-    const newBuf = new Uint8Array(this.buffer.length + hash.length);
-    newBuf.set(this.buffer,0);
-    newBuf.set(hash,this.buffer.length);
-    this.buffer = newBuf;
-    this.bufferIndex = (this.bufferIndex || 0);
-    this.counter++;
+    const nb = new Uint8Array(this.buf.length + hash.length);
+    nb.set(this.buf); nb.set(hash, this.buf.length);
+    this.buf = nb; this.counter++;
   }
   async nextByte(){
-    if(this.bufferIndex >= this.buffer.length) await this.refill();
-    return this.buffer[this.bufferIndex++];
+    if(this.i >= this.buf.length) await this.refill();
+    return this.buf[this.i++];
   }
-  // uniform float in [0,1)
   async nextFloat(){
-    // use 4 bytes -> 32-bit int
-    let b0 = await this.nextByte();
-    let b1 = await this.nextByte();
-    let b2 = await this.nextByte();
-    let b3 = await this.nextByte();
-    const int = (b0<<24) | (b1<<16) | (b2<<8) | (b3);
-    // convert signed to unsigned
-    const u = int >>> 0;
-    return u / 4294967296; // 2^32
+    const b0 = await this.nextByte();
+    const b1 = await this.nextByte();
+    const b2 = await this.nextByte();
+    const b3 = await this.nextByte();
+    const int = ((b0<<24) | (b1<<16) | (b2<<8) | b3) >>> 0;
+    return int / 4294967296;
   }
 }
 
-/* ---- Game logic ---- */
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d', {alpha:false});
-const cw = canvas.width, ch = canvas.height;
-
-let rng = null;
-let playing = false;
-let step = 0;
-let chosenLane = 1; // 0,1,2
-let obstacles = []; // {step, lane}
-let stepInterval = 700; // ms between steps
-let stepTimer = null;
-const stepFactor = 0.22; // multiplier growth per step
-
-// DOM
+/* ---------- DOM ---------- */
 const serverSeedEl = document.getElementById('serverSeed');
 const clientSeedEl = document.getElementById('clientSeed');
 const nonceEl = document.getElementById('nonce');
-const startBtn = document.getElementById('startBtn');
-const cashBtn = document.getElementById('cashBtn');
-const genBtn = document.getElementById('genSeedsBtn');
-const roundInfo = document.getElementById('roundInfo');
-const stepDisplay = document.getElementById('stepDisplay');
-const multDisplay = document.getElementById('multDisplay');
-const seedPreview = document.getElementById('seedPreview');
-const lastOutcome = document.getElementById('lastOutcome');
+const genBtn = document.getElementById('genBtn');
+const startBtn = document.getElementById('start');
+const cashBtn = document.getElementById('cash');
+const roundStateEl = document.getElementById('roundState');
+const stepEl = document.getElementById('step');
+const multEl = document.getElementById('mult');
+const seedPreviewEl = document.getElementById('seedPreview');
 
-// helper: gen random seed hex
-function randHex(len=64){
-  const a = new Uint8Array(len/2);
-  crypto.getRandomValues(a);
-  return bytesToHex(a);
-}
-
-/* UI wiring */
-genBtn.addEventListener('click', ()=>{
+genBtn.addEventListener('click', ()=> {
   serverSeedEl.value = randHex(64);
   clientSeedEl.value = Math.random().toString(36).slice(2,12);
   nonceEl.value = Math.floor(Math.random()*1000);
 });
 
-document.getElementById('lane0').addEventListener('click', ()=> chooseLane(0));
-document.getElementById('lane1').addEventListener('click', ()=> chooseLane(1));
-document.getElementById('lane2').addEventListener('click', ()=> chooseLane(2));
+/* ---------- Canvas & rendering ---------- */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W = canvas.width, H = canvas.height;
+function resizeCanvas(){ const ratio = Math.min(window.innerWidth-80, 900); canvas.width = Math.max(480, Math.floor(ratio)); canvas.height = Math.floor(canvas.width * 0.5); W=canvas.width; H=canvas.height; draw(); }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-startBtn.addEventListener('click', startRound);
-cashBtn.addEventListener('click', cashOut);
+/* ---------- Game state ---------- */
+let rng = null;
+let obstacles = []; // array of {step, lane}
+let playing = false;
+let step = 0;
+let lane = 1; // 0..2
+const stepFactor = 0.2; // multiplier per step (1 + step*factor)
+const obstacleProbability = 0.32;
+let lastTime = 0;
+let accumulate = 0;
+const stepInterval = 700; // ms between logical steps
+let nextStepAt = 0;
 
-document.addEventListener('keydown', (e)=>{
-  if(e.key === 'ArrowLeft') chooseLane(Math.max(0, chosenLane-1));
-  if(e.key === 'ArrowRight') chooseLane(Math.min(2, chosenLane+1));
-});
-
-function updateHUD(){
-  roundInfo.textContent = playing ? 'LIVE' : 'Idle';
-  stepDisplay.textContent = step;
-  const mult = (1 + step * stepFactor);
-  multDisplay.textContent = mult.toFixed(2) + 'x';
-  seedPreview.textContent = `server_seed: ${serverSeedEl.value || '(empty)'}\nclient_seed: ${clientSeedEl.value || '(empty)'}\nnonce: ${nonceEl.value}`;
-}
-
-function chooseLane(l){
-  chosenLane = l;
-  // visual feedback: highlight runner - handled in draw
-}
-
-/* Generate obstacles deterministically for given maxSteps */
-async function generateObstacles(maxSteps=100){
+/* ---------- Precompute obstacles ---------- */
+async function precomputeObstacles(maxSteps=300){
   obstacles = [];
   for(let s=1;s<=maxSteps;s++){
-    const f = await rng.nextFloat(); // 0..1
-    // pick obstacle probability p (we use 0.33 medium difficulty)
-    const p = 0.33;
-    if(f < p){
+    const f = await rng.nextFloat();
+    if(f < obstacleProbability){
       const b = await rng.nextByte();
-      const lane = b % 3;
-      obstacles.push({step:s, lane});
+      const laneChoice = b % 3;
+      obstacles.push({step:s, lane:laneChoice});
     } else {
       obstacles.push({step:s, lane:null});
     }
   }
 }
 
-/* Game progression */
-async function startRound(){
+/* ---------- Start / Cash ---------- */
+startBtn.addEventListener('click', async ()=>{
   if(playing) return;
-  // validate seeds
-  const serverSeed = (serverSeedEl.value || '').trim();
-  const clientSeed = (clientSeedEl.value || '').trim() || 'democlient';
-  const nonce = (nonceEl.value || '1').trim();
-
-  // create RNG object
-  rng = new DetermRNG(serverSeed, clientSeed, nonce);
-  // prefill some bytes
-  await rng.refill();
-
-  // generate obstacle plan for next 200 steps (cached)
-  await generateObstacles(200);
-
-  playing = true;
-  step = 0;
-  chosenLane = 1;
-  updateHUD();
+  // read seeds
+  const server = (serverSeedEl.value||'').trim();
+  const client = (clientSeedEl.value||'').trim() || 'demo';
+  const nonce = (nonceEl.value||'1').toString();
+  rng = new DetermRNG(server, client, nonce);
+  await rng.refill(); // one refill to seed buffer
+  await precomputeObstacles(400);
+  // init
+  playing = true; step = 0; lane = 1; lastTime = performance.now(); accumulate = 0; nextStepAt = lastTime + stepInterval;
+  roundStateEl.textContent = 'LIVE';
   startBtn.disabled = true;
   cashBtn.disabled = false;
-  lastOutcome.textContent = '—';
+  updateHUD();
+  requestAnimationFrame(loop);
+});
 
-  // start stepping
-  stepTimer = setInterval(async ()=>{
-    step++;
-    updateHUD();
-    // check obstacle at this step
-    const ob = obstacles[step-1];
-    // draw will reflect
-    if(ob && ob.lane !== null && ob.lane === chosenLane){
-      // busted
-      playing = false;
-      clearInterval(stepTimer);
-      startBtn.disabled = false;
-      cashBtn.disabled = true;
-      lastOutcome.textContent = `BUST at step ${step}`;
-      updateHUD();
-      draw();
-      return;
-    }
-    // otherwise continue
-    draw();
-  }, stepInterval);
-
-  draw();
-}
-
-/* Cash out */
-function cashOut(){
+cashBtn.addEventListener('click', ()=>{
   if(!playing) return;
-  const cashStep = step;
   playing = false;
-  clearInterval(stepTimer);
   startBtn.disabled = false;
   cashBtn.disabled = true;
-  const multiplier = 1 + cashStep * stepFactor;
-  lastOutcome.textContent = `CASHED at step ${cashStep} → ${multiplier.toFixed(2)}x`;
+  const mult = 1 + step * stepFactor;
+  roundStateEl.textContent = `CASHED ${mult.toFixed(2)}x`;
   updateHUD();
-  draw();
+});
+
+/* ---------- Input (keyboard and touch) ---------- */
+document.addEventListener('keydown', (e)=> {
+  if(e.key === 'ArrowLeft') lane = Math.max(0, lane-1);
+  if(e.key === 'ArrowRight') lane = Math.min(2, lane+1);
+});
+document.getElementById('laneL').addEventListener('click', ()=> lane=0);
+document.getElementById('laneM').addEventListener('click', ()=> lane=1);
+document.getElementById('laneR').addEventListener('click', ()=> lane=2);
+
+// tap on canvas to move (left/center/right) for mobile
+canvas.addEventListener('touchstart', (ev)=>{
+  ev.preventDefault();
+  const x = ev.touches[0].clientX - canvas.getBoundingClientRect().left;
+  const third = canvas.width/3;
+  const idx = Math.floor(x/third);
+  lane = Math.min(2, Math.max(0, idx));
+});
+
+/* ---------- Game loop (delta-time + fixed-step) ---------- */
+function updateLogic(){
+  // called on each logical step (not every frame)
+  step++;
+  // check obstacle at this step
+  const ob = obstacles[step-1];
+  if(ob && ob.lane !== null && ob.lane === lane){
+    // bust
+    playing = false;
+    startBtn.disabled = false;
+    cashBtn.disabled = true;
+    roundStateEl.textContent = `BUST @ ${step}`;
+  }
+  updateHUD();
 }
 
-/* Drawing */
+function updateHUD(){
+  stepEl.textContent = step;
+  multEl.textContent = (1 + step * stepFactor).toFixed(2) + 'x';
+  seedPreviewEl.textContent = `server: ${serverSeedEl.value||'(empty)'}\nclient: ${clientSeedEl.value||'(empty)'}\nnonce: ${nonceEl.value||'(empty)'}`;
+}
+
+function loop(now){
+  if(!lastTime) lastTime = now;
+  const dt = now - lastTime;
+  lastTime = now;
+  if(playing){
+    // fixed-step logic using accumulate
+    accumulate += dt;
+    while(accumulate >= stepInterval){
+      accumulate -= stepInterval;
+      // do logical step
+      updateLogic();
+      // if bust, break
+      if(!playing) break;
+    }
+  }
+
+  // render at smooth frame-rate
+  draw();
+  if(playing) requestAnimationFrame(loop);
+}
+
+/* ---------- Drawing ---------- */
 function draw(){
   // clear
-  ctx.fillStyle = '#041018';
-  ctx.fillRect(0,0,cw,ch);
+  ctx.fillStyle = '#061015';
+  ctx.fillRect(0,0,W,H);
 
   // draw lanes
-  const laneW = cw/3;
+  const laneW = W/3;
   for(let i=0;i<3;i++){
-    ctx.fillStyle = (i%2===0)?'#061826':'#051720';
-    ctx.fillRect(i*laneW,0,laneW,ch);
-    // lane divider
+    ctx.fillStyle = (i%2===0)?'#081217':'#071018';
+    ctx.fillRect(i*laneW,0,laneW,H);
+    // vertical separators
     ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-    ctx.beginPath(); ctx.moveTo(i*laneW,0); ctx.lineTo(i*laneW,ch); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(i*laneW,0); ctx.lineTo(i*laneW,H); ctx.stroke();
   }
 
-  // draw runner (at bottom)
-  const runnerY = ch - 46;
-  const runnerX = chosenLane*laneW + laneW/2;
-  ctx.fillStyle = '#28f0d0';
-  ctx.beginPath(); ctx.roundRect(runnerX-22, runnerY-34,44,44,8); ctx.fill();
-  ctx.fillStyle = '#041217'; ctx.font = '700 18px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(String(chosenLane+1), runnerX, runnerY-12);
-
-  // draw upcoming obstacle for the current step (preview top to bottom)
-  // Obstacles' vertical position based on steps ahead
-  const maxPreview = 8;
-  for(let ahead=0; ahead<maxPreview; ahead++){
-    const s = step + 1 + ahead; // next steps
-    if(s > obstacles.length) break;
-    const ob = obstacles[s-1];
+  // draw upcoming obstacles as rectangles moving downward based on time till step
+  const previewSteps = 8;
+  for(let ahead=1; ahead<=previewSteps; ahead++){
+    const sIndex = step + ahead - 1; // 0-based index
+    if(sIndex >= obstacles.length) break;
+    const ob = obstacles[sIndex];
     if(!ob || ob.lane === null) continue;
-    const lane = ob.lane;
-    // y position: farther steps higher (closer to top)
-    const t = ahead / maxPreview; // 0..1
-    const y = 30 + t * (ch - 140);
-    const x = lane*laneW + laneW/2;
-    const width = 44 - ahead*3;
-    ctx.fillStyle = (ahead===0)?'#ff6b6b':'#7c3cff';
-    ctx.beginPath(); ctx.roundRect(x-width/2, y, width, 16, 6); ctx.fill();
+    const tFraction = ahead / (previewSteps + 1); // 0..1
+    const y = 30 + tFraction * (H - 120);
+    const centerX = ob.lane * laneW + laneW/2;
+    ctx.fillStyle = ahead===1 ? '#ff6b6b' : '#7c3cff';
+    const w = 48 - ahead*3;
+    roundRectFill(ctx, centerX - w/2, y, w, 16, 6);
   }
 
-  // HUD overlay: top-left show next few steps and probability
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  // draw runner block at bottom
+  const runnerY = H - 56;
+  const runnerX = lane*laneW + laneW/2;
+  ctx.fillStyle = '#2fbf9f';
+  roundRectFill(ctx, runnerX-26, runnerY-36, 52, 52, 8);
+  ctx.fillStyle = '#041018';
+  ctx.font = '700 18px Inter';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText((lane+1).toString(), runnerX, runnerY-12);
+
+  // HUD overlay small
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
   ctx.fillRect(12,12,220,80);
-  ctx.fillStyle = '#bfeef0';
-  ctx.font = '600 13px Inter';
+  ctx.fillStyle = '#cfeff0'; ctx.font = '600 13px Inter';
   ctx.fillText('Next obstacles (preview)', 22, 30);
   ctx.font = '13px Inter';
   for(let i=0;i<6;i++){
     const s = step + 1 + i;
-    const ob = (s<=obstacles.length)?obstacles[s-1]:null;
+    const ob = (s-1 < obstacles.length) ? obstacles[s-1] : null;
     const text = s + ': ' + (ob && ob.lane!==null ? `Lane ${ob.lane+1}` : '—');
     ctx.fillText(text, 22, 50 + i*12);
   }
 }
 
-/* polyfill: roundRect if not available */
-if(!CanvasRenderingContext2D.prototype.roundRect){
-  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
-    if(typeof r === 'number') r = {tl:r,tr:r,br:r,bl:r};
-    this.beginPath();
-    this.moveTo(x+r.tl,y);
-    this.arcTo(x+w,y,x+w,y+h,r.tr);
-    this.arcTo(x+w,y+h,x,y+h,r.br);
-    this.arcTo(x,y+h,x,y,r.bl);
-    this.arcTo(x,y,x+w,y,r.tl);
-    this.closePath();
-  };
+/* ---------- Helpers ---------- */
+function roundRectFill(ctx,x,y,w,h,r){
+  if(w<0||h<0) return;
+  ctx.beginPath();
+  const r0 = typeof r === 'number' ? {tl:r,tr:r,br:r,bl:r} : r;
+  ctx.moveTo(x + r0.tl, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r0.tr);
+  ctx.arcTo(x + w, y + h, x, y + h, r0.br);
+  ctx.arcTo(x, y + h, x, y, r0.bl);
+  ctx.arcTo(x, y, x + w, y, r0.tl);
+  ctx.closePath();
+  ctx.fill();
 }
 
-/* initial draw */
+/* ---------- Initialize small state ---------- */
 draw();
 updateHUD();
 
