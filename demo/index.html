@@ -1,190 +1,20 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Vector Run — Clean Demo (60 FPS)</title>
-<meta name="description" content="Smooth minimal Vector Run demo — deterministic obstacles via SHA-256 seeds." />
-
-<style>
-/* ---- KEEPING YOUR STYLE EXACTLY AS YOU HAD IT ---- */
-:root{
-  --bg:#0f1216;
-  --panel:#12161a;
-  --muted:#9aa9b1;
-  --accent:#2fbf9f;
-  --accent2:#6b6fff;
-  --white:#e6eef1;
-}
-html,body{
-  height:100%;margin:0;
-  background:linear-gradient(180deg,var(--bg),#071018);
-  color:var(--white);
-  font-family:Inter,Arial,Helvetica,sans-serif;
-  -webkit-font-smoothing:antialiased
-}
-.wrap{max-width:960px;margin:18px auto;padding:16px}
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-header h1{font-size:18px;margin:0}
-header p{margin:0;color:var(--muted);font-size:13px}
-
-.panel{
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,0.03);
-  padding:12px;
-  border-radius:10px
-}
-.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
-input[type="text"], input[type="number"]{
-  padding:8px;border-radius:8px;
-  border:1px solid rgba(255,255,255,0.04);
-  background:rgba(0,0,0,0.18);
-  color:var(--white);
-  width:220px
-}
-button{
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-  border:0;padding:10px 12px;
-  border-radius:8px;
-  color:#041018;font-weight:700;
-  cursor:pointer
-}
-button.ghost{
-  background:transparent;
-  border:1px solid rgba(255,255,255,0.04);
-  color:var(--accent)
-}
-.muted{color:var(--muted);font-size:13px}
-
-.game-wrap{display:flex;gap:14px;margin-top:14px;align-items:flex-start}
-.canvas-panel{flex:1;display:flex;justify-content:center}
-canvas{
-  background:#0b0f12;
-  border-radius:8px;
-  display:block;
-  touch-action:none
-}
-.hud{width:300px}
-.hud .box{
-  background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
-  padding:12px;border-radius:10px;
-  border:1px solid rgba(255,255,255,0.02);
-  margin-bottom:12px
-}
-.big{font-size:18px;font-weight:700}
-.lane-controls{display:flex;gap:8px;margin-top:8px}
-.lane-controls button{flex:1;padding:9px}
-.status{margin-top:6px;color:var(--muted);font-size:13px}
-
-footer{
-  margin-top:18px;
-  color:var(--muted);
-  font-size:13px;
-  text-align:center
-}
-
-@media(max-width:860px){
-  .game-wrap{flex-direction:column}
-  .hud{width:100%}
-  canvas{width:100%}
-}
-</style>
-</head>
-
-<body>
-<div class="wrap">
-
-<header>
-  <div>
-    <h1>Vector Run — Clean Demo</h1>
-    <p class="muted">Minimal, smooth, deterministic. Uses SHA-256 seeds to precompute obstacles.</p>
-  </div>
-  <div class="muted">Controls: ← / → or tap lanes</div>
-</header>
-
-<div class="panel row">
-  <div>
-    <label>Server seed (hex)</label>
-    <input id="serverSeed" type="text" placeholder="server seed (hex)"/>
-  </div>
-
-  <div>
-    <label>Client seed</label>
-    <input id="clientSeed" type="text" placeholder="client seed" />
-  </div>
-
-  <div>
-    <label>Nonce</label>
-    <input id="nonce" type="number" min="0" value="1" />
-  </div>
-
-  <div style="align-self:end">
-    <button id="genBtn" class="ghost">Generate seeds</button>
-  </div>
-</div>
-
-<div class="game-wrap">
-  <div class="canvas-panel panel">
-    <canvas id="game" width="720" height="360"></canvas>
-  </div>
-
-  <aside class="hud">
-
-    <div class="box">
-      <div class="muted">Round</div>
-      <div id="roundState" class="big">Idle</div>
-    </div>
-
-    <div class="box">
-      <div class="muted">Step</div>
-      <div id="step" class="big">0</div>
-    </div>
-
-    <div class="box">
-      <div class="muted">Multiplier</div>
-      <div id="mult" class="big">1.00x</div>
-    </div>
-
-    <div class="box">
-      <button id="start">Start</button>
-      <button id="cash" class="ghost" disabled>Cash Out</button>
-    </div>
-
-    <div class="box">
-      <div class="muted">Touch lanes</div>
-      <div class="lane-controls">
-        <button id="laneL">Left</button>
-        <button id="laneM">Mid</button>
-        <button id="laneR">Right</button>
-      </div>
-    </div>
-
-    <div class="box">
-      <div class="muted">Seed preview</div>
-      <div id="seedPreview" class="muted" style="word-break:break-all"></div>
-    </div>
-
-  </aside>
-</div>
-
-<footer>Demo is client-side for presentation. Production must run RNG server-side and reveal server seed after round.</footer>
-</div>
-
 <script>
-/* =======================================================================================
-    FIXED + CLEANED + GUARANTEED WORKING
-   ======================================================================================= */
+/* ===========================
+   Vector Run — Full Fixed Demo
+   Async RNG, instant first obstacle
+   =========================== */
 
 /* ---------- Utilities ---------- */
-function bytesToHex(bytes){
-  return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');
+function bytesToHex(bytes) {
+  return Array.from(bytes).map(b => b.toString(16).padStart(2,'0')).join('');
 }
-async function sha256Bytes(data){
+
+async function sha256Bytes(data) {
   const h = await crypto.subtle.digest('SHA-256', data);
   return new Uint8Array(h);
 }
-function randHex(len=64){
+
+function randHex(len=64) {
   const a = new Uint8Array(len/2);
   crypto.getRandomValues(a);
   return bytesToHex(a);
@@ -200,6 +30,7 @@ class DetermRNG {
     this.buf = new Uint8Array([]);
     this.i = 0;
   }
+
   async refill(){
     const msg = `${this.serverSeed}:${this.clientSeed}:${this.nonce}:${this.counter}`;
     const enc = new TextEncoder().encode(msg);
@@ -210,10 +41,12 @@ class DetermRNG {
     this.buf = nbuf;
     this.counter++;
   }
+
   async nextByte(){
     if(this.i >= this.buf.length) await this.refill();
     return this.buf[this.i++];
   }
+
   async nextFloat(){
     const b0 = await this.nextByte();
     const b1 = await this.nextByte();
@@ -224,7 +57,7 @@ class DetermRNG {
   }
 }
 
-/* ---------- DOM ---------- */
+/* ---------- DOM Elements ---------- */
 const serverSeedEl = document.getElementById("serverSeed");
 const clientSeedEl = document.getElementById("clientSeed");
 const nonceEl = document.getElementById("nonce");
@@ -236,6 +69,7 @@ const stepEl = document.getElementById("step");
 const multEl = document.getElementById("mult");
 const seedPreviewEl = document.getElementById("seedPreview");
 
+/* ---------- Seed Generator ---------- */
 genBtn.onclick = ()=>{
   serverSeedEl.value = randHex(64);
   clientSeedEl.value = Math.random().toString(36).slice(2,12);
@@ -275,13 +109,13 @@ let accumulator = 0;
 /* ---------- Precompute Obstacles ---------- */
 async function precomputeObstacles(max=400){
   obstacles = [];
-  for(let s=1; s<=max; s++){
+  for(let s=0; s<max; s++){
     const f = await rng.nextFloat();
     if(f < obstacleProbability){
       const b = await rng.nextByte();
-      obstacles.push({step:s, lane:b%3});
+      obstacles.push({step: s, lane: b % 3});
     } else {
-      obstacles.push({step:s, lane:null});
+      obstacles.push({step: s, lane: null});
     }
   }
 }
@@ -298,15 +132,15 @@ nonce: ${nonceEl.value}`;
 
 /* ---------- Game Logic ---------- */
 function doLogicalStep(){
-  step++;
-  const ob = obstacles[step-1];
+  const ob = obstacles[step];
   if(ob && ob.lane !== null && ob.lane === lane){
     playing = false;
-    roundStateEl.textContent = `BUST @ ${step}`;
+    roundStateEl.textContent = `BUST @ ${step+1}`;
     cashBtn.disabled = true;
     startBtn.disabled = false;
     return;
   }
+  step++;
   updateHUD();
 }
 
@@ -319,8 +153,8 @@ function loop(now){
 
   const dt = now - lastTime;
   lastTime = now;
-
   accumulator += dt;
+
   while(accumulator >= stepInterval){
     accumulator -= stepInterval;
     doLogicalStep();
@@ -331,7 +165,7 @@ function loop(now){
   if(playing) requestAnimationFrame(loop);
 }
 
-/* ---------- Start ---------- */
+/* ---------- Start Button ---------- */
 startBtn.onclick = async ()=>{
   if(playing) return;
 
@@ -339,10 +173,19 @@ startBtn.onclick = async ()=>{
   const c = clientSeedEl.value.trim() || "demo";
   const n = (nonceEl.value || "1").toString();
 
-  rng = new DetermRNG(s, c, n);
+  if(!s){
+    alert("Please enter a valid server seed!");
+    return;
+  }
+
+  roundStateEl.textContent = "LOADING...";
+  startBtn.disabled = true;
+
+  rng = new DetermRNG(s,c,n);
   await rng.refill();
   await precomputeObstacles();
 
+  // Start game instantly
   playing = true;
   step = 0;
   lane = 1;
@@ -350,9 +193,9 @@ startBtn.onclick = async ()=>{
   lastTime = performance.now();
 
   roundStateEl.textContent = "LIVE";
-  startBtn.disabled = true;
   cashBtn.disabled = false;
   updateHUD();
+  draw(); // draw first step immediately
 
   requestAnimationFrame(loop);
 };
@@ -400,7 +243,6 @@ function draw(){
   ctx.fillRect(0,0,W,H);
 
   const lw = W/3;
-
   for(let i=0;i<3;i++){
     ctx.fillStyle = (i%2===0) ? "#081217" : "#071018";
     ctx.fillRect(i*lw,0,lw,H);
@@ -414,7 +256,6 @@ function draw(){
 
     const frac = i/(preview+1);
     const y = 30 + frac*(H-120);
-
     const cx = ob.lane*lw + lw/2;
     const w = 48 - i*3;
 
@@ -438,7 +279,4 @@ function draw(){
 /* ---------- Init ---------- */
 draw();
 updateHUD();
-
 </script>
-</body>
-</html>
