@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradF" x1="0" x2="1">
+      <stop offset="0%" stop-color="#2fffe2"/>
+      <stop offset="100%" stop-color="#7a5bff"/>
+    </linearGradient>
+
+    <filter id="neonF" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="128" height="128" rx="22" fill="#0b111c"/>
+
+  <g transform="translate(20,12)" filter="url(#neonF)">
+    <path d="M20 10 L44 96 L68 10" stroke="url(#gradF)" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <path d="M44 68 L28 32" stroke="#2fffe2" stroke-width="5" stroke-linecap="round"/>
+    <path d="M44 71 L44 34" stroke="#67eaff" stroke-width="5" stroke-linecap="round"/>
+    <path d="M44 74 L60 32" stroke="#7a5bff" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>
