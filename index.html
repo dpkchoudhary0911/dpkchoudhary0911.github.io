@@ -1,103 +1,386 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Vector Run Labs — Vector Run</title>
+<meta name="description" content="Vector Run Labs — Provably-fair, high-frequency crypto casino microgames. Flagship game: Vector Run." />
 
-    <title>Vector Run Labs</title>
+<!-- favicon (from assets/) -->
+<link rel="icon" type="image/svg+xml" href="./assets/vectorrun-favicon.svg">
+<link rel="shortcut icon" href="./assets/vectorrun-favicon.svg">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="./assets/vectorrun-favicon.svg">
+<!-- fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@600&display=swap" rel="stylesheet">
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ============================
+     Vector Run Labs — Single-file Premium Site
+     All CSS inlined for single-file deployment.
+     ============================ */
 
-    <style>
-        body {
-            margin: 0;
-            font-family: "Inter", sans-serif;
-            background: #0b111c;
-            color: #e9f4ff;
-            text-rendering: optimizeLegibility;
-        }
+  :root{
+    --bg-1:#05060a;
+    --bg-2:#0d1116;
+    --glass: rgba(255,255,255,0.03);
+    --muted:#9fbac2;
+    --text:#e6f6f5;
+    --neon:#28f0d0;
+    --accent:#7a5bff;
+    --card-border: rgba(255,255,255,0.03);
+    --radius:14px;
+    --maxw:1100px;
+  }
 
-        header {
-            width: 100%;
-            padding: 22px 34px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            background: rgba(255, 255, 255, 0.02);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(8px);
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 20;
-        }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:
+    radial-gradient(900px 420px at 12% 12%, rgba(122,91,255,0.04), transparent 8%),
+    linear-gradient(180deg,var(--bg-1) 0%, var(--bg-2) 100%);
+    color:var(--text);font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;-webkit-font-smoothing:antialiased}
 
-        .logo-mark {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 56px;
-            transition: transform .25s ease;
-        }
+  a{color:var(--neon);text-decoration:none}
+  a:hover{text-decoration:underline}
 
-        .logo-mark:hover {
-            transform: scale(1.03);
-        }
+  .wrap{max-width:var(--maxw);margin:20px auto;padding:18px}
 
-        .hero {
-            margin-top: 140px;
-            text-align: center;
-            padding: 40px 20px;
-        }
+  /* Header */
+  header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid var(--card-border);box-shadow:0 10px 30px rgba(2,6,12,0.6)}
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo-mark{width:56px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(122,91,255,0.14), rgba(40,240,208,0.08));border:1px solid rgba(255,255,255,0.03);transition:transform .26s}
+  .logo-mark img{height:48px;display:block}
+  .logo-mark:hover{transform:translateY(-4px) scale(1.03)}
+  .brand h1{margin:0;font-size:1.05rem;letter-spacing:0.6px}
+  .brand p{margin:0;color:var(--muted);font-size:0.85rem}
 
-        .hero h1 {
-            font-size: 42px;
-            font-weight: 800;
-            margin-bottom: 14px;
-            background: linear-gradient(135deg, #2fffe2, #7a5bff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+  nav{display:flex;gap:8px;align-items:center}
+  .nav-link{color:var(--muted);padding:8px 10px;border-radius:8px;font-weight:600}
+  .nav-link:hover{color:var(--neon);background:linear-gradient(90deg, rgba(40,240,208,0.03), rgba(122,91,255,0.02));transform:translateY(-2px)}
 
-        .hero p {
-            font-size: 18px;
-            opacity: 0.75;
-            max-width: 520px;
-            margin: auto;
-        }
+  /* Hero */
+  .hero{display:grid;grid-template-columns:1fr 420px;gap:22px;align-items:center;margin-top:18px;padding:28px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid var(--card-border);position:relative;overflow:hidden}
+  .hero-left h2{font-family:"Orbitron",sans-serif;color:var(--neon);font-size:2rem;margin:0;text-shadow:0 8px 30px rgba(40,240,208,0.06)}
+  .hero-left p{color:var(--muted);margin-top:8px;font-size:1.05rem}
+  .cta{display:flex;gap:12px;margin-top:16px}
+  .btn{padding:12px 18px;border-radius:10px;border:0;font-weight:700;cursor:pointer;background:linear-gradient(90deg,var(--neon),var(--accent));color:#071017;box-shadow:0 12px 38px rgba(40,240,208,0.06)}
+  .btn.ghost{background:transparent;border:1px solid rgba(40,240,208,0.06);color:var(--neon)}
+  .btn:hover{transform:translateY(-4px)}
+  .hero-note{margin-top:12px;color:var(--muted);font-size:0.95rem}
 
-        footer {
-            margin-top: 120px;
-            text-align: center;
-            padding: 30px 10px;
-            opacity: 0.5;
-            font-size: 14px;
-        }
-    </style>
+  /* lane preview */
+  .lane-preview{height:300px;border-radius:12px;background:linear-gradient(180deg, rgba(8,12,16,0.6), rgba(6,9,14,0.3));position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.02);padding:14px;display:flex;align-items:center;justify-content:center}
+  .lane-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+  .lane{border-left:1px solid rgba(255,255,255,0.02);display:flex;align-items:flex-end;justify-content:center;padding-bottom:28px}
+  .runner{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--neon),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:800;color:#061017;box-shadow:0 10px 30px rgba(40,240,208,0.06)}
+  .obstacle{position:absolute;width:56px;height:18px;background:linear-gradient(90deg,#ff7a7a,#7c3cff);border-radius:6px;box-shadow:0 6px 18px rgba(124,60,255,0.12);left:50%;transform:translateX(-50%);animation:fall 1.6s linear infinite}
+  @keyframes fall{0%{top:-14%}100%{top:110%}}
+
+  /* content */
+  .content{display:grid;grid-template-columns:1fr;gap:18px;margin-top:18px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;border:1px solid var(--card-border)}
+  .badge{display:inline-block;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,0.18);color:var(--neon);font-weight:700;margin-bottom:8px}
+  h2.section-title{margin:0;font-size:1.6rem;color:var(--neon);font-family:"Orbitron",sans-serif}
+  .muted{color:var(--muted)}
+
+  .two-col{display:flex;gap:18px;flex-wrap:wrap}
+  .col{flex:1;min-width:240px}
+
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+  .feature{padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.02)}
+  .feature h4{margin:0;color:var(--accent);font-size:1rem}
+
+  .pf pre{background:rgba(5,8,12,0.6);padding:12px;border-radius:8px;overflow:auto;color:#bfeef0;border:1px solid rgba(0,255,200,0.04);font-size:0.95rem}
+  .pf p{color:var(--muted);margin:10px 0}
+
+  .timeline{display:flex;flex-direction:column;gap:12px}
+  .step{display:flex;gap:12px;align-items:flex-start}
+  .dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(90deg,var(--neon),var(--accent));box-shadow:0 8px 24px rgba(40,240,208,0.06);margin-top:6px}
+  .step .meta{color:var(--muted)}
+
+  .contact-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+  .contact a{display:inline-block;margin-right:10px;color:var(--neon)}
+
+  footer{margin-top:22px;padding:18px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.03));display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--card-border)}
+  .foot-links a{color:var(--muted);margin-left:12px;text-decoration:none}
+  .foot-links a:hover{color:var(--neon)}
+
+  /* particles */
+  .particles{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:0.06}
+  .particle{position:absolute;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.05));width:8px;height:8px}
+
+  /* responsive */
+  @media (max-width:980px){
+    .hero{grid-template-columns:1fr;padding:18px}
+    .lane-preview{height:220px}
+    .features{grid-template-columns:1fr}
+  }
+  @media (max-width:520px){
+    header{flex-direction:column;align-items:flex-start;gap:10px}
+    .logo-mark{width:48px;height:48px}
+    .hero-left h2{font-size:1.4rem}
+  }
+
+  /* reduce motion */
+  @media (prefers-reduced-motion: reduce){
+    .obstacle{animation:none}
+  }
+</style>
 </head>
 
 <body>
+  <div class="wrap">
 
-    <!-- HEADER -->
-    <header>
-        <div class="logo-mark">
-            <img src="./assets/vectorrun-logo.svg" alt="Vector Run Labs Logo" height="56">
+    <!-- Header -->
+    <header role="banner" aria-label="Vector Run Labs header">
+      <div class="brand">
+        <div class="logo-mark" aria-hidden>
+          <img src="./assets/vectorrun-logo.svg" alt="Vector Run Labs Logo">
         </div>
+        <div>
+          <h1>Vector Run Labs</h1>
+          <p class="muted">Provably-fair crypto microgames</p>
+        </div>
+      </div>
+
+      <nav role="navigation" aria-label="Main navigation">
+        <a class="nav-link" href="#hero">Home</a>
+        <a class="nav-link" href="#games">Game</a>
+        <a class="nav-link" href="#provable">Provably Fair</a>
+        <a class="nav-link" href="#why">Why</a>
+        <a class="nav-link" href="#roadmap">Roadmap</a>
+        <a class="nav-link" href="#contact">Contact</a>
+      </nav>
     </header>
 
-    <!-- HERO SECTION -->
-    <section class="hero">
-        <h1>Vector Run Labs</h1>
-        <p>Crafting neon cyberpunk microgames with provable fairness and premium execution for the next generation of players.</p>
+    <!-- Hero -->
+    <section id="hero" class="hero" aria-labelledby="hero-title">
+      <div class="hero-left">
+        <h2 id="hero-title">Vector Run — Three-lane adrenaline microgame</h2>
+        <p>Pick a lane. Dodge obstacles. Cash out anytime. Fast rounds, transparent RNG, and a tight house edge — optimized for crypto casino play.</p>
+        <div class="cta">
+          <button class="btn" onclick="scrollToSection('games')">View Game</button>
+          <button class="btn ghost" onclick="scrollToSection('provable')">Provably Fair</button>
+        </div>
+        <div class="hero-note">Demo & technical appendix available on request.</div>
+      </div>
+
+      <div class="lane-preview" aria-hidden>
+        <div class="lane-grid">
+          <div class="lane"><div class="runner">1</div></div>
+          <div class="lane"><div class="runner">2</div></div>
+          <div class="lane"><div class="runner">3</div></div>
+        </div>
+        <!-- obstacles created by JS -->
+      </div>
+
+      <div class="particles" id="particles" aria-hidden></div>
     </section>
 
-    <footer>
-        Vector Run Labs © 2025 — All Rights Reserved
-    </footer>
+    <!-- Content -->
+    <main class="content" role="main">
 
+      <!-- Game card -->
+      <section id="games" class="card" aria-labelledby="games-title">
+        <span class="badge">Featured</span>
+        <h2 id="games-title" class="section-title">Vector Run — Game Details</h2>
+        <p class="muted">Fast microgame, 3 lanes, step-by-step rounds. Designed for short sessions and high volume.</p>
+
+        <div class="two-col" style="margin-top:12px">
+          <div class="col">
+            <h3 style="margin:0;font-family:Orbitron, sans-serif;color:var(--neon)">Core mechanics</h3>
+            <ul class="muted" style="margin-top:8px">
+              <li>Player chooses one of three lanes each round.</li>
+              <li>Each step may spawn an obstacle in a lane.</li>
+              <li>Hit an obstacle → bust. Survive → multiplier increases.</li>
+              <li>Cash out anytime; multiplier grows per step.</li>
+            </ul>
+          </div>
+
+          <div class="col">
+            <h3 style="margin:0;font-family:Orbitron, sans-serif;color:var(--neon)">Tunable parameters</h3>
+            <ul class="muted" style="margin-top:8px">
+              <li>Obstacle probability (easy/med/hard)</li>
+              <li>Step multiplier factor (controls house edge)</li>
+              <li>Tick rate (400–800ms) to balance volume vs control</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Why choose us -->
+      <section id="why" class="card" aria-labelledby="why-title">
+        <h2 id="why-title" class="section-title">Why Choose Vector Run Labs</h2>
+        <div class="features" style="margin-top:12px">
+          <div class="feature">
+            <h4>Provably Fair</h4>
+            <p class="muted">HMAC-SHA256 RNG with server_seed commitment and public verification.</p>
+          </div>
+          <div class="feature">
+            <h4>High Throughput</h4>
+            <p class="muted">Minimal client work and optimized server logic for heavy concurrency.</p>
+          </div>
+          <div class="feature">
+            <h4>Retention Focused</h4>
+            <p class="muted">Short loops, near-miss visuals, and immediate feedback drive session length.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Provably Fair -->
+      <section id="provable" class="card pf" aria-labelledby="pf-title">
+        <h2 id="pf-title" class="section-title">Provably Fair — How it works</h2>
+        <p class="muted">Every round is reproducible from cryptographic inputs so players and auditors can verify outcomes.</p>
+        <ol class="muted">
+          <li>Server publishes <strong>server_seed_hash = SHA256(server_seed)</strong> before rounds.</li>
+          <li>Player provides <em>client_seed</em> (or one is auto-generated).</li>
+          <li>Compute <strong>HMAC_SHA256(server_seed, client_seed + ':' + nonce)</strong> to produce deterministic bytes.</li>
+          <li>Map bytes into obstacle spawn & lane selection. Reveal <em>server_seed</em> after round for verification.</li>
+        </ol>
+
+        <p class="muted">Verification (example Node.js snippet):</p>
+        <pre class="muted pf">// Node.js example:
+const crypto = require('crypto');
+function hmac(serverSeed, clientSeed, nonce){
+  return crypto.createHmac('sha256', Buffer.from(serverSeed,'hex'))
+               .update(`${clientSeed}:${nonce}`).digest('hex');
+}
+console.log(hmac(serverSeedHex, clientSeed, nonce));</pre>
+
+        <div style="margin-top:8px"><button class="btn ghost" onclick="openVerificationModal()">Open verifier (demo)</button></div>
+      </section>
+
+      <!-- About -->
+      <section id="about-studio" class="card" aria-labelledby="about-title">
+        <h2 id="about-title" class="section-title">About Vector Run Labs</h2>
+        <p class="muted">Independent studio building provably-fair microgames optimized for crypto platforms. We provide production-ready integration kits, a technical appendix for audits, and telemetry to tune economic balance.</p>
+      </section>
+
+      <!-- Roadmap -->
+      <section id="roadmap" class="card" aria-labelledby="roadmap-title">
+        <h2 id="roadmap-title" class="section-title">Roadmap & Vision</h2>
+        <div class="timeline" style="margin-top:10px">
+          <div class="step"><div class="dot"></div><div class="meta"><strong>Q4 2025:</strong> Production-ready Vector Run build, integration kit & Stake pitch packet.</div></div>
+          <div class="step"><div class="dot"></div><div class="meta"><strong>Q1 2026:</strong> Launch multi-difficulty modes, telemetry dashboard for house-edge tuning.</div></div>
+          <div class="step"><div class="dot"></div><div class="meta"><strong>Q2 2026:</strong> Additional microgames and cross-promo features.</div></div>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section id="contact" class="card" aria-labelledby="contact-title">
+        <h2 id="contact-title" class="section-title">Contact</h2>
+        <div class="contact-row">
+          <div>
+            <p class="muted"><strong>Email:</strong> <a href="mailto:deep1907b@gmail.com">deep1907b@gmail.com</a></p>
+            <p class="muted"><strong>GitHub:</strong> <a href="https://github.com/dpkchoudhary0911">github.com/dpkchoudhary0911</a></p>
+          </div>
+          <div style="margin-left:auto;color:var(--muted)">Demo & tech appendix available on request.</div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div>&copy; 2025 Vector Run Labs</div>
+      <div class="foot-links">
+        <a href="#hero">Home</a>
+        <a href="#provable">Provably Fair</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- lightweight JS for interactivity (all inline) -->
+  <script>
+    // smooth scroll
+    function scrollToSection(id){
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    // particles: light, low-cost
+    (function particles(){
+      const container = document.getElementById('particles');
+      if(!container) return;
+      const count = Math.max(6, Math.floor(window.innerWidth / 160));
+      for(let i=0;i<count;i++){
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = 4 + Math.random()*10;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.left = (Math.random()*100) + '%';
+        p.style.top = (Math.random()*100) + '%';
+        p.style.opacity = (0.08 + Math.random()*0.4).toFixed(2);
+        container.appendChild(p);
+        // animate via transform loop
+        (function(el, dx, dy){
+          let t = 0;
+          function f(){ t += 0.01; el.style.transform = `translate(${Math.sin(t)*dx}px, ${Math.cos(t*1.2)*dy}px)`; requestAnimationFrame(f); }
+          requestAnimationFrame(f);
+        })(p, 6+Math.random()*12, 4+Math.random()*10);
+      }
+    })();
+
+    // obstacle preview (hero)
+    (function obstaclePreview(){
+      const preview = document.querySelector('.lane-preview');
+      if(!preview) return;
+      function spawn(){
+        const lanes = [18,50,82]; // left, center, right % positions
+        const idx = Math.floor(Math.random()*3);
+        const obs = document.createElement('div');
+        obs.className = 'obstacle';
+        obs.style.left = lanes[idx] + '%';
+        obs.style.opacity = 0.7 + Math.random()*0.3;
+        obs.style.width = (40 + Math.random()*22) + 'px';
+        obs.style.top = '-18%';
+        const dur = 1100 + Math.random()*1200;
+        obs.style.animationDuration = (dur/1000) + 's';
+        preview.appendChild(obs);
+        setTimeout(()=> obs.remove(), dur + 200);
+      }
+      const interval = setInterval(spawn, 700);
+      // respect reduced motion
+      if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        clearInterval(interval);
+        document.querySelectorAll('.obstacle').forEach(o=>o.remove());
+      }
+    })();
+
+    // Verification modal (light)
+    function openVerificationModal(){
+      const snippet = `// Example Node.js verification
+const crypto = require('crypto');
+function hmac(serverSeed, clientSeed, nonce){
+  return crypto.createHmac('sha256', Buffer.from(serverSeed,'hex'))
+               .update(\`\${clientSeed}:\${nonce}\`).digest('hex');
+}
+console.log(hmac(serverSeedHex, clientSeed, nonce));`;
+      // quick modal
+      const modal = document.createElement('div');
+      modal.style.position='fixed';modal.style.inset='0';modal.style.background='rgba(3,6,8,0.7)';modal.style.display='flex';
+      modal.style.alignItems='center';modal.style.justifyContent='center';modal.style.zIndex=9999;
+      const box = document.createElement('div');
+      box.style.background='#071018';box.style.padding='18px';box.style.borderRadius='12px';box.style.maxWidth='720px';box.style.width='94%';
+      box.innerHTML = '<h3 style="margin:0 0 8px 0;color:var(--neon)">Round verifier (example)</h3>';
+      const pre = document.createElement('pre');pre.style.background='#031219';pre.style.padding='12px';pre.style.borderRadius='8px';
+      pre.style.color='#bfeef0';pre.style.overflow='auto';pre.textContent = snippet;
+      const close = document.createElement('button');close.textContent='Close';close.style.marginTop='12px';close.className='btn ghost';
+      close.onclick = ()=> document.body.removeChild(modal);
+      box.appendChild(pre);box.appendChild(close);modal.appendChild(box);document.body.appendChild(modal);
+    }
+
+    // Accessibility: prefer-reduced-motion removal of heavy animation handled earlier
+
+    // navigation links smooth
+    document.querySelectorAll('.nav-link').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        const href = a.getAttribute('href').slice(1);
+        scrollToSection(href);
+      });
+    });
+  </script>
 </body>
 </html>
