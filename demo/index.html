@@ -1,106 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Vector Run — Playable Demo (Deterministic)</title>
+<meta name="description" content="This demo generates obstacle patterns from server_seed + client_seed + nonce using SHA-256. Enter seeds and press Start Round." />
+<style>
+  :root{
+    --bg:#071017; --panel:#0f1620; --muted:#9fbac2; --accent:#28f0d0; --accent2:#7a5bff;
+  }
+  body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#051015,#071018);color:#dff5f1;display:flex;min-height:100vh;align-items:flex-start;justify-content:center;padding:28px;}
+  .wrap{width:100%;max-width:980px}
+  h1{margin:0 0 8px 0;font-size:20px;color:var(--accent)}
+  p.lead{margin:6px 0 18px 0;color:var(--muted)}
+  .top-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:12px;border-radius:10px}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+  input[type="text"], input[type="number"]{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(0,0,0,0.25);color:inherit;width:260px}
+  button{cursor:pointer;padding:10px 12px;border-radius:8px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#041219;font-weight:700}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--accent)}
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .game-area{margin-top:18px;display:flex;gap:18px;align-items:flex-start}
+  #canvasWrap{background:linear-gradient(180deg,#071018,#041018);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+  canvas{display:block;background:#07131a;border-radius:8px;width:100%;height:auto;}
+  .hud{width:300px}
+  .hud .box{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);margin-bottom:12px}
+  .muted{color:var(--muted)}
+  .big{font-size:18px;font-weight:700}
+  .lane-buttons{display:flex;gap:8px;margin-top:8px}
+  .lane-buttons button{flex:1;padding:10px}
+  .info{font-size:13px;color:var(--muted)}
+  footer{margin-top:18px;color:var(--muted);font-size:13px}
+  @media(max-width:860px){ .game-area{flex-direction:column} .hud{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Vector Run — Playable Demo (Deterministic)</h1>
+  <p class="lead">This demo generates obstacle patterns from <strong>server_seed + client_seed + nonce</strong> using SHA-256. Enter seeds below and press <em>Start Round</em>. Use lane buttons or ←/→ to change lane. Cash out anytime.</p>
+
+  <div class="top-row">
+    <div class="panel">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div>
+          <label>Server seed (hex)</label>
+          <input id="serverSeed" type="text" placeholder="server seed (random hex)"/>
+        </div>
+        <div>
+          <label>Client seed</label>
+          <input id="clientSeed" type="text" placeholder="client seed (any text)"/>
+        </div>
+        <div>
+          <label>Nonce</label>
+          <input id="nonce" type="number" min="0" value="1"/>
+        </div>
+        <div style="align-self:end;">
+          <button id="genSeedsBtn" class="ghost">Generate seeds</button>
+        </div>
+      </div>
+      <div style="margin-top:10px" class="info muted">
+        <div><strong>Note:</strong> In production the server publishes SHA256(server_seed) before rounds and reveals server_seed after the round.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:320px">
+      <div class="panel hud">
+        <div class="box">
+          <div class="muted">Round</div>
+          <div id="roundInfo" class="big">Not started</div>
+        </div>
+        <div class="box">
+          <div class="muted">Current Step</div>
+          <div id="stepDisplay" class="big">0</div>
+        </div>
+        <div class="box">
+          <div class="muted">Multiplier</div>
+          <div id="multDisplay" class="big">1.00x</div>
+        </div>
+        <div class="box">
+          <button id="startBtn">Start Round</button>
+          <button id="cashBtn" class="ghost" disabled>Cash Out</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="muted">Controls</div>
+        <div class="lane-buttons">
+          <button id="lane0">Left ←</button>
+          <button id="lane1">Middle</button>
+          <button id="lane2">Right →</button>
+        </div>
+        <div style="margin-top:8px" class="info muted">Keyboard: ← and → change lane. Tap lane buttons on mobile.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-area">
+    <div id="canvasWrap" class="panel" style="flex:1">
+      <canvas id="gameCanvas" width="720" height="320" aria-label="Vector Run demo canvas"></canvas>
+    </div>
+
+    <div class="hud" aria-hidden>
+      <div class="box">
+        <div class="muted">Deterministic Preview</div>
+        <div id="seedPreview" class="muted" style="word-break:break-all"></div>
+      </div>
+      <div class="box">
+        <div class="muted">Last Outcome</div>
+        <div id="lastOutcome" class="muted">—</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Demo uses SHA-256 via browser Crypto API to produce deterministic bytes. This is a frontend demo — server-side authoritative implementation required for production.</footer>
+</div>
+
 <script>
-(async function() {
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  let W = canvas.width, H = canvas.height;
-  canvas.width = 720;
-  canvas.height = 360;
+/* =========================
+   Vector Run Deterministic Demo (Responsive)
+========================= */
 
-  // Draw blank background first
-  ctx.fillStyle = "#061015";
-  ctx.fillRect(0,0,W,H);
+/* Utilities */
+function bytesToHex(bytes){return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function sha256Bytes(data){return new Uint8Array(await crypto.subtle.digest('SHA-256', data));}
+function randHex(len=64){const a=new Uint8Array(len/2);crypto.getRandomValues(a);return bytesToHex(a);}
 
-  const serverSeedEl = document.getElementById("serverSeed");
-  const clientSeedEl = document.getElementById("clientSeed");
-  const nonceEl = document.getElementById("nonce");
-  const genBtn = document.getElementById("genBtn");
-  const startBtn = document.getElementById("start");
-  const cashBtn = document.getElementById("cash");
-  const roundStateEl = document.getElementById("roundState");
-  const stepEl = document.getElementById("step");
-  const multEl = document.getElementById("mult");
-  const seedPreviewEl = document.getElementById("seedPreview");
-
-  function bytesToHex(bytes) {
-    return Array.from(bytes).map(b => b.toString(16).padStart(2,'0')).join('');
+/* Deterministic RNG */
+class DetermRNG{
+  constructor(serverSeed, clientSeed, nonce){
+    this.serverSeed = serverSeed||'';
+    this.clientSeed = clientSeed||'';
+    this.nonce = String(nonce||'0');
+    this.counter=0;
+    this.buffer = new Uint8Array([]);
+    this.bufferIndex=0;
   }
-
-  async function sha256Bytes(data){
-    return new Uint8Array(await crypto.subtle.digest('SHA-256', data));
+  async refill(){
+    const msg = `${this.serverSeed}:${this.clientSeed}:${this.nonce}:${this.counter}`;
+    const enc = new TextEncoder().encode(msg);
+    const hash = await sha256Bytes(enc);
+    const newBuf = new Uint8Array(this.buffer.length + hash.length);
+    newBuf.set(this.buffer,0);
+    newBuf.set(hash,this.buffer.length);
+    this.buffer = newBuf;
+    this.bufferIndex = 0;
+    this.counter++;
   }
+  async nextByte(){if(this.bufferIndex>=this.buffer.length) await this.refill(); return this.buffer[this.bufferIndex++];}
+  async nextFloat(){let b0=await this.nextByte(),b1=await this.nextByte(),b2=await this.nextByte(),b3=await this.nextByte(); return (((b0<<24)|(b1<<16)|(b2<<8)|b3)>>>0)/4294967296;}
+}
 
-  function randHex(len=64){
-    const a = new Uint8Array(len/2);
-    crypto.getRandomValues(a);
-    return bytesToHex(a);
+/* ---- DOM ---- */
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d',{alpha:false});
+let rng=null, playing=false, step=0, chosenLane=1, obstacles=[], stepInterval=700, stepTimer=null, stepFactor=0.22;
+
+const serverSeedEl=document.getElementById('serverSeed');
+const clientSeedEl=document.getElementById('clientSeed');
+const nonceEl=document.getElementById('nonce');
+const startBtn=document.getElementById('startBtn');
+const cashBtn=document.getElementById('cashBtn');
+const genBtn=document.getElementById('genSeedsBtn');
+const roundInfo=document.getElementById('roundInfo');
+const stepDisplay=document.getElementById('stepDisplay');
+const multDisplay=document.getElementById('multDisplay');
+const seedPreview=document.getElementById('seedPreview');
+const lastOutcome=document.getElementById('lastOutcome');
+
+genBtn.addEventListener('click',()=>{serverSeedEl.value=randHex(64);clientSeedEl.value=Math.random().toString(36).slice(2,12);nonceEl.value=Math.floor(Math.random()*1000);});
+document.getElementById('lane0').addEventListener('click',()=>chosenLane=0);
+document.getElementById('lane1').addEventListener('click',()=>chosenLane=1);
+document.getElementById('lane2').addEventListener('click',()=>chosenLane=2);
+startBtn.addEventListener('click',startRound);
+cashBtn.addEventListener('click',cashOut);
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft') chosenLane=Math.max(0,chosenLane-1);if(e.key==='ArrowRight') chosenLane=Math.min(2,chosenLane+1);});
+
+/* Responsive Canvas */
+function resizeCanvas(){
+  const wrap=document.getElementById('canvasWrap');
+  const maxWidth=wrap.clientWidth;
+  canvas.width=Math.max(480, Math.min(900,maxWidth));
+  canvas.height=Math.floor(canvas.width*0.444);
+  draw();
+}
+window.addEventListener('resize',resizeCanvas);
+resizeCanvas();
+
+/* HUD update */
+function updateHUD(){roundInfo.textContent=playing?'LIVE':'Idle';stepDisplay.textContent=step;multDisplay.textContent=(1+step*stepFactor).toFixed(2)+'x';seedPreview.textContent=`server_seed: ${serverSeedEl.value||'(empty)'}\nclient_seed: ${clientSeedEl.value||'(empty)'}\nnonce: ${nonceEl.value}`;}
+
+/* Obstacles */
+async function generateObstacles(maxSteps=200){obstacles=[];for(let s=1;s<=maxSteps;s++){const f=await rng.nextFloat();if(f<0.33){const lane=(await rng.nextByte())%3;obstacles.push({step:s,lane});}else{obstacles.push({step:s,lane:null});}}}
+
+/* Game logic */
+async function startRound(){
+  if(playing) return;
+  rng=new DetermRNG((serverSeedEl.value||'').trim(),(clientSeedEl.value||'democlient').trim(),(nonceEl.value||'1').trim());
+  await rng.refill(); await generateObstacles(200);
+  playing=true; step=0; chosenLane=1;
+  updateHUD(); startBtn.disabled=true; cashBtn.disabled=false; lastOutcome.textContent='—';
+  stepTimer=setInterval(async()=>{
+    step++; updateHUD();
+    const ob=obstacles[step-1];
+    if(ob && ob.lane!==null && ob.lane===chosenLane){
+      playing=false; clearInterval(stepTimer); startBtn.disabled=false; cashBtn.disabled=true;
+      lastOutcome.textContent=`BUST at step ${step}`; updateHUD(); draw(); return;
+    }
+    draw();
+  }, stepInterval);
+  draw();
+}
+
+function cashOut(){if(!playing) return;const cashStep=step;playing=false;clearInterval(stepTimer);startBtn.disabled=false;cashBtn.disabled=true;lastOutcome.textContent=`CASHED at step ${cashStep} → ${(1+cashStep*stepFactor).toFixed(2)}x`;updateHUD();draw();}
+
+/* Drawing */
+function draw(){
+  const cw=canvas.width,ch=canvas.height;
+  ctx.fillStyle='#041018'; ctx.fillRect(0,0,cw,ch);
+  const laneW=cw/3;
+  for(let i=0;i<3;i++){ctx.fillStyle=(i%2===0)?'#061826':'#051720';ctx.fillRect(i*laneW,0,laneW,ch);}
+  // Runner
+  const runnerY=ch-46,runnerX=chosenLane*laneW+laneW/2;
+  ctx.fillStyle='#28f0d0'; ctx.beginPath(); ctx.roundRect(runnerX-22,runnerY-34,44,44,8); ctx.fill();
+  ctx.fillStyle='#041217'; ctx.font='700 18px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(String(chosenLane+1),runnerX,runnerY-12);
+  // Obstacles preview
+  const maxPreview=8;
+  for(let ahead=0;ahead<maxPreview;ahead++){
+    const s=step+1+ahead;if(s>obstacles.length) break; const ob=obstacles[s-1]; if(!ob||ob.lane===null) continue;
+    const x=ob.lane*laneW+laneW/2,y=30+ahead/maxPreview*(ch-140),width=44-ahead*3;
+    ctx.fillStyle=(ahead===0)?'#ff6b6b':'#7c3cff'; ctx.beginPath(); ctx.roundRect(x-width/2,y,width,16,6); ctx.fill();
   }
+}
 
-  class DetermRNG {
-    constructor(serverSeed, clientSeed, nonce){
-      this.serverSeed = serverSeed;
-      this.clientSeed = clientSeed;
-      this.nonce = String(nonce);
-      this.counter = 0;
-      this.buf = new Uint8Array([]);
-      this.i = 0;
-    }
-    async refill(){
-      const msg = `${this.serverSeed}:${this.clientSeed}:${this.nonce}:${this.counter}`;
-      const enc = new TextEncoder().encode(msg);
-      const hash = await sha256Bytes(enc);
-      const nbuf = new Uint8Array(this.buf.length + hash.length);
-      nbuf.set(this.buf);
-      nbuf.set(hash, this.buf.length);
-      this.buf = nbuf;
-      this.counter++;
-    }
-    async nextByte(){
-      if(this.i >= this.buf.length) await this.refill();
-      return this.buf[this.i++];
-    }
-    async nextFloat(){
-      const b0 = await this.nextByte();
-      const b1 = await this.nextByte();
-      const b2 = await this.nextByte();
-      const b3 = await this.nextByte();
-      const int = ((b0<<24)|(b1<<16)|(b2<<8)|b3)>>>0;
-      return int / 4294967296;
-    }
-  }
+/* roundRect polyfill */
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){if(typeof r==='number') r={tl:r,tr:r,br:r,bl:r};this.beginPath();this.moveTo(x+r.tl,y);this.arcTo(x+w,y,x+w,y+h,r.tr);this.arcTo(x+w,y+h,x,y+h,r.br);this.arcTo(x,y+h,x,y,r.bl);this.arcTo(x,y,x+w,y,r.tl);this.closePath();};
+}
 
-  genBtn.onclick = ()=>{
-    serverSeedEl.value = randHex(64);
-    clientSeedEl.value = Math.random().toString(36).slice(2,12);
-    nonceEl.value = Math.floor(Math.random()*999);
-  };
-
-  startBtn.onclick = async ()=>{
-    try {
-      const s = serverSeedEl.value.trim() || randHex(64);
-      const c = clientSeedEl.value.trim() || "demo";
-      const n = (nonceEl.value || "1").toString();
-      roundStateEl.textContent = "LOADING...";
-
-      const rng = new DetermRNG(s,c,n);
-      await rng.refill();
-
-      // generate small preview first
-      const obstacles = [];
-      for(let i=0;i<10;i++){
-        const f = await rng.nextFloat();
-        const b = await rng.nextByte();
-        obstacles.push({step:i, lane: f<0.32? b%3 : null});
-      }
-
-      // Draw first obstacle immediately
-      ctx.fillStyle = "#081217";
-      ctx.fillRect(50,50,50,50);
-
-      roundStateEl.textContent = "LIVE";
-    } catch(e){
-      console.error("RNG/obstacle error:", e);
-      roundStateEl.textContent = "ERROR";
-    }
-  };
-})();
+/* initial draw */
+draw(); updateHUD();
 </script>
+</body>
+</html>
