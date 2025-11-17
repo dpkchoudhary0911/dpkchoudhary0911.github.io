@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Vector Run — Mobile Demo Animated</title>
+<title>Vector Run — Animated Demo</title>
 <style>
 body{margin:0;font-family:sans-serif;background:#071018;color:#fff;display:flex;flex-direction:column;align-items:center;padding:8px;}
 button,input{padding:8px;margin:4px;border-radius:6px;border:none;}
 button{background:#2fbf9f;color:#041018;font-weight:700;}
 button.ghost{background:none;border:1px solid #2fbf9f;color:#2fbf9f;}
-#canvasWrap{width:100%;max-width:720px;}
-canvas{width:100%;height:auto;background:#0b0f12;display:block;touch-action:none;}
+#canvasWrap{width:100%;max-width:720px;touch-action:none;}
+canvas{width:100%;height:auto;background:#0b0f12;display:block;}
 .hud{width:100%;max-width:720px;display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
 .hud div{flex:1;background:#0f1620;padding:6px;border-radius:6px;text-align:center;}
 .lane-buttons{display:flex;gap:4px;}
@@ -33,7 +33,7 @@ canvas{width:100%;height:auto;background:#0b0f12;display:block;touch-action:none
 <div class="hud">
   <div>Round: <span id="roundInfo">Idle</span></div>
   <div>Step: <span id="stepInfo">0</span></div>
-  <div>Multiplier: <span id="multInfo">1.00x<div class="multBar"><div class="multFill" id="multFill"></div></div></div></div>
+  <div>Multiplier: <span id="multInfo">1.00x<div class="multBar"><div class="multFill" id="multFill"></div></div></span></div>
 </div>
 
 <div class="hud">
@@ -53,12 +53,12 @@ canvas{width:100%;height:auto;background:#0b0f12;display:block;touch-action:none
 </div>
 
 <script>
-/* Utilities */
+/* ----------------- Utilities ----------------- */
 function bytesToHex(bytes){return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');}
 async function sha256Bytes(data){return new Uint8Array(await crypto.subtle.digest('SHA-256',data));}
 function randHex(len=64){const a=new Uint8Array(len/2);crypto.getRandomValues(a);return bytesToHex(a);}
 
-/* Determ RNG */
+/* ----------------- Determ RNG ----------------- */
 class DetermRNG{
   constructor(serverSeed, clientSeed, nonce){this.s=serverSeed||'';this.c=clientSeed||'';this.n=String(nonce||'0');this.counter=0;this.buf=new Uint8Array([]);this.idx=0;}
   async refill(){const msg=`${this.s}:${this.c}:${this.n}:${this.counter}`;const enc=new TextEncoder().encode(msg);const h=await sha256Bytes(enc);const b=new Uint8Array(this.buf.length+h.length);b.set(this.buf,0);b.set(h,this.buf.length);this.buf=b;this.idx=0;this.counter++;}
@@ -66,7 +66,7 @@ class DetermRNG{
   async nextFloat(){const b0=await this.nextByte(),b1=await this.nextByte(),b2=await this.nextByte(),b3=await this.nextByte();return (((b0<<24)|(b1<<16)|(b2<<8)|b3)>>>0)/4294967296;}
 }
 
-/* DOM */
+/* ----------------- DOM ----------------- */
 const serverSeedEl=document.getElementById('serverSeed');
 const clientSeedEl=document.getElementById('clientSeed');
 const nonceEl=document.getElementById('nonce');
@@ -83,69 +83,79 @@ const lastOutcome=document.getElementById('lastOutcome');
 const canvas=document.getElementById('gameCanvas');
 const ctx=canvas.getContext('2d');
 
-/* Game state */
-let rng=null, obstacles=[], playing=false, step=0, chosenLane=null, stepPending=true;
-const maxSteps=200, stepFactor=0.2;
-let animObstacles=[]; // smooth obstacles
+/* ----------------- Game State ----------------- */
+let rng=null, obstacles=[], playing=false, step=0, runnerLane=1, targetLane=1, stepPending=true;
+const maxSteps=50, stepFactor=0.2;
+let animObstacles=[], crashTimer=0;
 
-/* Generate seeds */
+/* ----------------- Generate Seeds ----------------- */
 genBtn.onclick=()=>{serverSeedEl.value=randHex(64);clientSeedEl.value=Math.random().toString(36).slice(2,12);nonceEl.value=Math.floor(Math.random()*999);updateHUD();};
 
-/* Lane selection */
-laneBtns.forEach((b,i)=>b.onclick=()=>{if(playing && stepPending){chosenLane=i;stepPending=false;}});
-canvas.addEventListener('touchstart',e=>{if(playing && stepPending){const x=e.touches[0].clientX-canvas.getBoundingClientRect().left;chosenLane=Math.min(2,Math.floor(x/(canvas.width/3)));stepPending=false;}});
+/* ----------------- Lane selection ----------------- */
+laneBtns.forEach((b,i)=>b.onclick=()=>{if(playing && stepPending){targetLane=i;stepPending=false;}});
+canvas.addEventListener('touchstart',e=>{if(playing && stepPending){const x=e.touches[0].clientX-canvas.getBoundingClientRect().left;targetLane=Math.min(2,Math.floor(x/(canvas.width/3)));stepPending=false;}});
 
-/* Start round */
+/* ----------------- Start Round ----------------- */
 startBtn.onclick=async()=>{
   rng=new DetermRNG(serverSeedEl.value||'',clientSeedEl.value||'demo',nonceEl.value||'1');
   await rng.refill();
   obstacles=[];
-  for(let s=0;s<maxSteps;s++){
-    const f=await rng.nextFloat();
-    obstacles.push(f<0.33?(await rng.nextByte())%3:null);
-  }
-  playing=true; step=0; chosenLane=null; stepPending=true;
-  animObstacles=[];
-  startBtn.disabled=true; cashBtn.disabled=false;
-  lastOutcome.textContent='—';updateHUD();
+  for(let s=0;s<maxSteps;s++){const f=await rng.nextFloat();obstacles.push(f<0.33?(await rng.nextByte())%3:null);}
+  playing=true; step=0; runnerLane=1; targetLane=1; stepPending=true; animObstacles=[]; crashTimer=0;
+  startBtn.disabled=true; cashBtn.disabled=false; lastOutcome.textContent='—'; updateHUD();
   requestAnimationFrame(loop);
 };
 
-/* Cash out */
+/* ----------------- Cash Out ----------------- */
 cashBtn.onclick=()=>{if(!playing)return;playing=false;startBtn.disabled=false;cashBtn.disabled=true;lastOutcome.textContent=`CASHED ${(1+step*stepFactor).toFixed(2)}x`;updateHUD();draw();};
 
-/* HUD update */
+/* ----------------- HUD ----------------- */
 function updateHUD(){roundInfo.textContent=playing?'LIVE':'Idle';stepInfo.textContent=step;multInfo.textContent=(1+step*stepFactor).toFixed(2)+'x';multFill.style.width=Math.min(100,(step/maxSteps*100))+'%';seedPreview.textContent=`server:${serverSeedEl.value}\nclient:${clientSeedEl.value}\nnonce:${nonceEl.value}`;}
 
-/* Loop with smooth animation */
+/* ----------------- Loop ----------------- */
+let runnerX=runnerLane*canvas.width/3+canvas.width/6;
 function loop(){
   draw();
   if(!playing) return;
-  if(!stepPending){
-    if(obstacles[step]!==null && obstacles[step]===chosenLane){playing=false;lastOutcome.textContent=`BUST at step ${step+1}`;startBtn.disabled=false;cashBtn.disabled=true;updateHUD();return;}
-    // create animated obstacle
+
+  // smooth lane movement
+  const targetX=targetLane*canvas.width/3+canvas.width/6;
+  runnerX+=Math.sign(targetX-runnerX)*Math.min(Math.abs(targetX-runnerX),6);
+
+  if(!stepPending && Math.abs(runnerX-targetX)<2){
+    // next step
     animObstacles.push({lane:obstacles[step], y:0});
-    step++; stepPending=true; chosenLane=null; updateHUD();
+    step++; stepPending=true; targetLane=runnerLane;
   }
-  // animate obstacles downward
-  animObstacles.forEach(o=>o.y+=4); // pixels per frame
-  animObstacles=animObstacles.filter(o=>o.y<canvas.height); 
+
+  animObstacles.forEach(o=>o.y+=4);
+  animObstacles.forEach(o=>{
+    if(o.lane!==null && o.y>canvas.height-56 && Math.abs(runnerX-(o.lane*canvas.width/3+canvas.width/6))<30){
+      playing=false; crashTimer=20; lastOutcome.textContent=`BUST at step ${step}`;startBtn.disabled=false;cashBtn.disabled=true;
+    }
+  });
+
+  animObstacles=animObstacles.filter(o=>o.y<canvas.height);
+  updateHUD();
   requestAnimationFrame(loop);
 }
 
-/* Draw */
+/* ----------------- Draw ----------------- */
 function draw(){
-  ctx.fillStyle='#041018';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  // crash shake effect
+  if(crashTimer>0){ctx.translate(Math.random()*8-4,0); crashTimer--;}
+  ctx.fillStyle=crashTimer>0?'#440000':'#041018'; ctx.fillRect(0,0,canvas.width,canvas.height);
   const laneW=canvas.width/3;
-  // draw lanes
-  for(let i=0;i<3;i++){ctx.fillStyle=i%2===0?'#081217':'#071018';ctx.fillRect(i*laneW,0,laneW,canvas.height);}
-  // draw runner
-  if(chosenLane!==null){ctx.fillStyle='#2fbf9f';ctx.fillRect(chosenLane*laneW+laneW/2-26,canvas.height-56,52,52);}
-  // draw obstacles
-  animObstacles.forEach(o=>{
-    if(o.lane!==null){ctx.fillStyle=o.lane===chosenLane?'#ff4c4c':'#7c3cff';ctx.fillRect(o.lane*laneW+laneW/2-22,o.y,44,16);}
-  });
+  for(let i=0;i<3;i++){ctx.fillStyle=i%2===0?'#081217':'#071018'; ctx.fillRect(i*laneW,0,laneW,canvas.height);}
+  // runner
+  ctx.fillStyle='#2fbf9f';
+  ctx.fillRect(runnerX-26,canvas.height-56,52,52);
+  // obstacles
+  animObstacles.forEach(o=>{if(o.lane!==null){ctx.fillStyle='#ff4c4c';ctx.fillRect(o.lane*laneW+laneW/2-22,o.y,44,16);}});
+  ctx.restore();
 }
+
 </script>
 </body>
 </html>
